@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>PopDarts Championship</title>
+  <meta name="theme-color" content="#0a0a0f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PopDarts">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap');
+    
+    :root {
+      --bg: #0a0a0f;
+      --card: #16161f;
+      --card-border: #252532;
+      --text: #ffffff;
+      --text-dim: #6b7280;
+      --accent: #f59e0b;
+      --accent-glow: rgba(245, 158, 11, 0.3);
+      --green: #10b981;
+      --red: #ef4444;
+      --purple: #8b5cf6;
+      --blue: #3b82f6;
+      --safe-top: env(safe-area-inset-top);
+      --safe-bottom: env(safe-area-inset-bottom);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      overscroll-behavior: none;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: 
+        radial-gradient(ellipse at 20% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(245, 158, 11, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .screen { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 10; background: var(--bg); }
+    .screen.active { display: flex; }
+
+    .header {
+      padding: max(12px, var(--safe-top)) 20px 12px;
+      background: linear-gradient(180deg, rgba(22,22,31,0.98) 0%, rgba(22,22,31,0.9) 100%);
+      backdrop-filter: blur(20px);
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      position: relative; z-index: 50;
+    }
+    .header h1 {
+      font-size: 22px; font-weight: 800;
+      display: flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, #fff 0%, #f59e0b 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .sync-btn {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; color: var(--text);
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      cursor: pointer;
+    }
+    .sync-btn:active { transform: scale(0.95); }
+    .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+    .sync-dot.connected { background: var(--green); }
+    .sync-dot.syncing { background: var(--accent); animation: pulse 0.5s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    .header-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .content {
+      flex: 1; overflow-y: auto; padding: 16px;
+      padding-bottom: calc(90px + var(--safe-bottom));
+      position: relative; z-index: 1;
+    }
+
+    .card {
+      background: linear-gradient(145deg, var(--card) 0%, rgba(22,22,31,0.8) 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+    .card h3 {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--text-dim); margin-bottom: 14px;
+    }
+
+    .btn {
+      width: 100%; padding: 16px; border-radius: 14px; border: none;
+      font-family: inherit; font-weight: 700; font-size: 15px;
+      cursor: pointer; transition: all 0.2s; margin-bottom: 10px;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #000; box-shadow: 0 4px 20px var(--accent-glow); }
+    .btn-secondary { background: rgba(255,255,255,0.08); border: 1px solid var(--card-border); color: var(--text); }
+    .btn-danger { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: var(--red); }
+    .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; }
+
+    .nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(180deg, rgba(22,22,31,0.95) 0%, rgba(22,22,31,0.99) 100%);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--card-border);
+      display: flex; padding: 8px 16px;
+      padding-bottom: max(8px, var(--safe-bottom));
+      z-index: 100;
+    }
+    .nav-item {
+      flex: 1; padding: 10px 0; text-align: center;
+      font-size: 10px; font-weight: 600;
+      color: var(--text-dim); background: none; border: none;
+      cursor: pointer; border-radius: 12px;
+    }
+    .nav-item.active { color: var(--accent); background: rgba(245,158,11,0.1); }
+    .nav-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+
+    .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    .stat-item { background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px 8px; text-align: center; }
+    .stat-num { font-size: 22px; font-weight: 900; background: linear-gradient(135deg, var(--accent) 0%, #fbbf24 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-label { font-size: 9px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; }
+
+    .next-game {
+      background: linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(139,92,246,0.08) 100%);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: 18px; padding: 20px; margin-bottom: 16px;
+      text-align: center; cursor: pointer;
+    }
+    .next-game .label { font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: 1px; }
+    .next-game .players { font-size: 20px; font-weight: 800; margin-top: 8px; }
+    .next-game .cta { font-size: 13px; color: var(--accent); margin-top: 12px; font-weight: 700; }
+    .next-game.gf { border-color: #ffd700; background: linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(245,158,11,0.08) 100%); }
+    .next-game.gf .label { color: #ffd700; }
+
+    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .quick-btn { background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; padding: 16px; text-align: center; cursor: pointer; }
+    .quick-btn:active { transform: scale(0.97); }
+    .quick-btn .icon { font-size: 28px; margin-bottom: 6px; }
+    .quick-btn .text { font-size: 13px; font-weight: 700; }
+    .quick-btn.primary { background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%); border-color: transparent; }
+    .quick-btn.primary .text { color: #000; }
+
+    .tabs { display: flex; background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 4px; margin-bottom: 14px; }
+    .tab { flex: 1; padding: 10px 8px; text-align: center; font-size: 12px; font-weight: 700; border: none; background: transparent; color: var(--text-dim); border-radius: 8px; cursor: pointer; }
+    .tab.active { background: var(--accent); color: #000; }
+
+    .data-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+    .data-table th { background: rgba(255,255,255,0.05); padding: 10px 6px; text-align: center; font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-dim); }
+    .data-table th:first-child { text-align: left; padding-left: 12px; border-radius: 8px 0 0 8px; }
+    .data-table th:last-child { border-radius: 0 8px 8px 0; }
+    .data-table td { padding: 12px 6px; text-align: center; border-bottom: 1px solid var(--card-border); }
+    .data-table td:first-child { text-align: left; padding-left: 12px; font-weight: 700; }
+    .data-table tr.leader { background: rgba(255,215,0,0.08); }
+    .data-table tr.leader td:first-child::before { content: '👑 '; }
+
+    .draw-game { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid var(--card-border); gap: 10px; cursor: pointer; border-radius: 10px; margin-bottom: 4px; }
+    .draw-game:active { background: rgba(255,255,255,0.05); }
+    .draw-game.done { opacity: 0.6; cursor: default; }
+    .draw-game.gf { background: linear-gradient(90deg, rgba(255,215,0,0.1) 0%, transparent 100%); }
+    .draw-game .num { width: 28px; height: 28px; background: rgba(255,255,255,0.08); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+    .draw-game.done .num { background: var(--green); color: #000; }
+    .draw-game .names { flex: 1; font-size: 13px; font-weight: 600; }
+    .draw-game .names .winner { color: var(--green); }
+    .draw-game .score { font-size: 13px; font-weight: 700; color: var(--accent); min-width: 50px; text-align: center; }
+
+    /* Color Selection */
+    .color-screen { background: var(--bg); }
+    .color-header { padding: max(20px, var(--safe-top)) 20px 20px; background: var(--card); text-align: center; border-bottom: 1px solid var(--card-border); position: relative; }
+    .color-header .back { position: absolute; left: 16px; top: max(20px, var(--safe-top)); font-size: 24px; cursor: pointer; padding: 8px; }
+    .color-header .step { font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: 2px; margin-bottom: 8px; }
+    .color-header h2 { font-size: 26px; font-weight: 800; }
+    .color-header p { color: var(--text-dim); margin-top: 6px; }
+    .color-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 20px; max-height: calc(100vh - 300px); overflow-y: auto; }
+    .color-card { background: var(--card); border: 3px solid transparent; border-radius: 16px; padding: 14px; cursor: pointer; }
+    .color-card.selected { border-color: var(--accent); box-shadow: 0 0 30px var(--accent-glow); }
+    .color-card.disabled { opacity: 0.25; pointer-events: none; }
+    .color-swatch { height: 55px; border-radius: 12px; display: flex; overflow: hidden; margin-bottom: 10px; }
+    .color-swatch .half { flex: 1; }
+    .color-card .name { font-weight: 700; font-size: 14px; }
+    .color-card .range { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+    .color-footer { position: fixed; bottom: 0; left: 0; right: 0; padding: 20px; padding-bottom: max(20px, var(--safe-bottom)); background: linear-gradient(transparent, var(--bg) 30%); }
+
+    /* Gameplay */
+    #screen-game { background: #000; }
+    .game-header { position: absolute; top: 0; left: 0; right: 0; padding: max(10px, var(--safe-top)) 16px 10px; display: flex; justify-content: space-between; align-items: center; z-index: 50; background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%); }
+    .game-back { width: 50px; height: 50px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border: none; border-radius: 50%; color: #fff; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .game-badges { display: flex; gap: 8px; }
+    .game-badge { background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+    .game-badge.target { color: var(--accent); }
+    .game-badge.gf { background: linear-gradient(135deg, #ffd700 0%, #f59e0b 100%); color: #000; }
+
+    .game-container { flex: 1; display: flex; flex-direction: column; }
+    .player-half { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow: hidden; }
+    .progress-fill { position: absolute; left: 0; right: 0; height: 0%; transition: height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 1; }
+    .player-half.top .progress-fill { bottom: 0; }
+    .player-half.bottom .progress-fill { top: 0; }
+    .player-ui { position: relative; z-index: 10; text-align: center; width: 100%; }
+    .player-name { font-size: 28px; font-weight: 800; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 10px; text-shadow: 0 2px 20px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; gap: 12px; }
+    .player-dot { width: 20px; height: 20px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); }
+    .score-row { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 15px; }
+    .score-big-btn { width: 80px; height: 80px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.4); color: #fff; font-size: 48px; font-weight: 300; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .score-big-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.2); }
+    .score-big-btn.minus { color: var(--red); border-color: rgba(239,68,68,0.4); }
+    .score-big-btn.plus { color: var(--green); border-color: rgba(16,185,129,0.4); }
+    .player-score { font-size: 140px; font-weight: 900; line-height: 1; text-shadow: 0 4px 40px rgba(0,0,0,0.5); min-width: 180px; }
+    .score-btns { display: flex; gap: 10px; justify-content: center; }
+    .score-btn { width: 65px; height: 55px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.4); color: #fff; font-size: 22px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .score-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.15); }
+    .game-divider { height: 6px; background: rgba(255,255,255,0.1); position: relative; z-index: 20; }
+    .reset-btn { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 56px; height: 56px; background: var(--card); border: 2px solid var(--card-border); border-radius: 50%; color: var(--text-dim); font-size: 24px; cursor: pointer; z-index: 21; }
+
+    /* Win Overlay */
+    .win-overlay { position: fixed; inset: 0; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 500; padding: 24px; }
+    .win-overlay.active { display: flex; }
+    .win-trophy { font-size: 100px; animation: bounce 0.6s infinite alternate; }
+    @keyframes bounce { from { transform: translateY(0) scale(1); } to { transform: translateY(-20px) scale(1.1); } }
+    .win-title { font-size: 18px; color: var(--accent); letter-spacing: 4px; margin-top: 20px; }
+    .win-name { font-size: 48px; font-weight: 900; margin-top: 10px; text-shadow: 0 0 40px var(--accent-glow); }
+    .win-score { font-size: 28px; color: var(--text-dim); margin-top: 8px; }
+    .win-btns { display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap; justify-content: center; }
+    .win-btn { padding: 16px 32px; border-radius: 14px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .win-btn.save { background: var(--green); color: #fff; }
+    .win-btn.again { background: var(--accent); color: #000; }
+    .win-btn.exit { background: rgba(255,255,255,0.1); color: #fff; }
+
+    .confetti { position: fixed; width: 12px; height: 12px; top: -20px; animation: confettiFall 3s linear forwards; z-index: 501; border-radius: 2px; }
+    @keyframes confettiFall { to { transform: translateY(100vh) rotate(720deg); } }
+
+    input, select { width: 100%; padding: 14px 16px; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); color: var(--text); border-radius: 12px; margin-bottom: 12px; font-family: inherit; font-size: 15px; }
+    input:focus, select:focus { outline: none; border-color: var(--accent); }
+
+    .player-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--card-border); }
+    .player-row .avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--purple) 0%, var(--blue) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-right: 12px; }
+    .player-row .info { flex: 1; }
+    .player-row .info .name { font-weight: 700; }
+    .player-row .info .stats { font-size: 12px; color: var(--text-dim); }
+    .player-row .delete { width: 36px; height: 36px; background: rgba(239,68,68,0.15); border: none; border-radius: 50%; color: var(--red); font-size: 18px; cursor: pointer; }
+
+    .empty { text-align: center; padding: 40px; color: var(--text-dim); }
+    .empty .icon { font-size: 48px; margin-bottom: 12px; }
+
+    .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--card-border); padding: 14px 24px; border-radius: 14px; font-size: 14px; font-weight: 600; z-index: 600; opacity: 0; transition: opacity 0.3s; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+    .toast.show { opacity: 1; }
+    .toast.success { border-left: 4px solid var(--green); }
+    .toast.error { border-left: 4px solid var(--red); }
+
+    .paused-banner { background: linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(59,130,246,0.1) 100%); border: 1px solid rgba(139,92,246,0.3); border-radius: 14px; padding: 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+    .paused-banner .label { font-size: 11px; color: var(--purple); font-weight: 700; }
+    .paused-banner .players { font-size: 15px; font-weight: 700; margin-top: 4px; }
+    .paused-banner .score { font-size: 11px; color: var(--text-dim); }
+    .paused-banner .resume { background: var(--purple); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 13px; }
+
+    .sync-info { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 12px; margin-bottom: 14px; font-size: 12px; }
+    .sync-info.error { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); }
+    .last-sync { font-size: 10px; color: var(--text-dim); margin-top: 6px; }
+  </style>
+</head>
+<body>
+
+<!-- HOME SCREEN -->
+<div id="screen-home" class="screen active">
+  <div class="header">
+    <h1>🎯 PopDarts</h1>
+    <div class="header-right">
+      <button class="sync-btn" onclick="manualSync()">
+        <span class="sync-dot" id="sync-dot"></span>
+        <span id="sync-label">Sync</span>
+      </button>
+    </div>
+  </div>
+  <div class="content">
+    <div id="sync-status-bar"></div>
+    
+    <div class="stats-bar">
+      <div class="stat-item"><div class="stat-num" id="stat-players">0</div><div class="stat-label">Players</div></div>
+      <div class="stat-item"><div class="stat-num" id="stat-games">0/0</div><div class="stat-label">Games</div></div>
+      <div class="stat-item"><div class="stat-num" id="stat-target">21</div><div class="stat-label">Target</div></div>
+      <div class="stat-item"><div class="stat-num" id="stat-leader">-</div><div class="stat-label">Leader</div></div>
+    </div>
+
+    <div id="paused-container"></div>
+    <div id="next-game-container"></div>
+
+    <div class="quick-actions">
+      <button class="quick-btn primary" onclick="playNextGame()"><div class="icon">▶️</div><div class="text">Play Next</div></button>
+      <button class="quick-btn" onclick="startCustomSetup()"><div class="icon">🎮</div><div class="text">Custom Match</div></button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('draw', this)">Draw</button>
+      <button class="tab" onclick="switchTab('standings', this)">Standings</button>
+      <button class="tab" onclick="switchTab('stats', this)">All-Time</button>
+    </div>
+
+    <div id="tab-draw" class="tab-content"></div>
+    <div id="tab-standings" class="tab-content" style="display:none"></div>
+    <div id="tab-stats" class="tab-content" style="display:none"></div>
+  </div>
+</div>
+
+<!-- COLOR SELECT -->
+<div id="screen-color" class="screen color-screen">
+  <div class="color-header">
+    <div class="back" onclick="cancelColorSelect()">←</div>
+    <div class="step" id="color-step">STEP 1 OF 2</div>
+    <h2 id="color-player-name">Player 1</h2>
+    <p>Select your dart color</p>
+  </div>
+  <div class="color-grid" id="color-grid"></div>
+  <div class="color-footer">
+    <button class="btn btn-success" id="color-confirm-btn" onclick="confirmColorSelect()" disabled>SELECT COLOR</button>
+  </div>
+</div>
+
+<!-- GAMEPLAY -->
+<div id="screen-game" class="screen">
+  <div class="game-header">
+    <button class="game-back" onclick="pauseGame()">⏸</button>
+    <div class="game-badges">
+      <div class="game-badge" id="game-label">Game 1</div>
+      <div class="game-badge target">Target: <span id="game-target">21</span></div>
+    </div>
+  </div>
+  <div class="game-container">
+    <div class="player-half top" id="p1-half">
+      <div class="progress-fill" id="p1-fill"></div>
+      <div class="player-ui">
+        <div class="player-name"><span class="player-dot" id="p1-dot"></span><span id="p1-name">Player 1</span></div>
+        <div class="score-row">
+          <button class="score-big-btn minus" onclick="addScore(1, -1)">−</button>
+          <div class="player-score" id="p1-score">0</div>
+          <button class="score-big-btn plus" onclick="addScore(1, 1)">+</button>
+        </div>
+        <div class="score-btns">
+          <button class="score-btn" onclick="addScore(1, 2)">+2</button>
+          <button class="score-btn" onclick="addScore(1, 3)">+3</button>
+          <button class="score-btn" onclick="addScore(1, 4)">+4</button>
+          <button class="score-btn" onclick="addScore(1, 5)">+5</button>
+        </div>
+      </div>
+    </div>
+    <div class="game-divider"><button class="reset-btn" onclick="resetScores()">↺</button></div>
+    <div class="player-half bottom" id="p2-half">
+      <div class="progress-fill" id="p2-fill"></div>
+      <div class="player-ui">
+        <div class="player-name"><span class="player-dot" id="p2-dot"></span><span id="p2-name">Player 2</span></div>
+        <div class="score-row">
+          <button class="score-big-btn minus" onclick="addScore(2, -1)">−</button>
+          <div class="player-score" id="p2-score">0</div>
+          <button class="score-big-btn plus" onclick="addScore(2, 1)">+</button>
+        </div>
+        <div class="score-btns">
+          <button class="score-btn" onclick="addScore(2, 2)">+2</button>
+          <button class="score-btn" onclick="addScore(2, 3)">+3</button>
+          <button class="score-btn" onclick="addScore(2, 4)">+4</button>
+          <button class="score-btn" onclick="addScore(2, 5)">+5</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="screen-settings" class="screen">
+  <div class="header"><h1>⚙️ Settings</h1></div>
+  <div class="content">
+    <div class="card">
+      <h3>📊 Google Sheets Sync</h3>
+      <div id="settings-sync-status" style="font-size:12px;margin-bottom:12px;"></div>
+      <button class="btn btn-primary" onclick="manualSync()">🔄 Sync Now</button>
+      <p style="font-size:11px;color:var(--text-dim);margin-top:8px;">Auto-syncs every 30 seconds. All devices share the same Google Sheet data.</p>
+    </div>
+
+    <div class="card">
+      <h3>Players</h3>
+      <div style="display:flex;gap:10px;margin-bottom:14px;">
+        <input type="text" id="new-player-input" placeholder="Player name..." style="margin:0;flex:1;">
+        <button class="btn btn-success" style="width:auto;margin:0;padding:14px 20px;" onclick="addPlayer()">+ Add</button>
+      </div>
+      <div id="player-list"></div>
+    </div>
+
+    <div class="card">
+      <h3>Championship</h3>
+      <button class="btn btn-primary" onclick="generateChampionship()">🎲 Generate Championship</button>
+      <button class="btn btn-danger" onclick="newEvent()">New Event (Keep Stats)</button>
+    </div>
+
+    <div class="card">
+      <h3>Target Score</h3>
+      <select id="target-select" onchange="changeTarget()">
+        <option value="11">First to 11</option>
+        <option value="15">First to 15</option>
+        <option value="21" selected>First to 21</option>
+        <option value="31">First to 31</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- WIN OVERLAY -->
+<div class="win-overlay" id="win-overlay">
+  <div class="win-trophy">🏆</div>
+  <div class="win-title">🎉 WINNER! 🎉</div>
+  <div class="win-name" id="win-name">Player</div>
+  <div class="win-score" id="win-result">21 - 15</div>
+  <div class="win-btns">
+    <button class="win-btn save" id="win-save" onclick="saveWin()">💾 Save Result</button>
+    <button class="win-btn again" onclick="playAgain()">🔄 Play Again</button>
+    <button class="win-btn exit" onclick="exitFromWin()">✕ Exit</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav" id="main-nav">
+  <button class="nav-item active" data-screen="home"><span class="nav-icon">🏠</span>Home</button>
+  <button class="nav-item" data-screen="settings"><span class="nav-icon">⚙️</span>Settings</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================================================
+// POPDARTS v5.2 - GOOGLE SHEETS SYNC
+// =============================================================================
+
+// YOUR GOOGLE APPS SCRIPT API URL
+const API_URL = 'https://script.google.com/macros/s/AKfycbxwPBnAgn6L-oGYsjh8jDgcDmrcJ67n9BriGYJgVewP3oJtXHEmx2eywzzN1AUMlvTO8A/exec';
+
+const DART_COLORS = [
+  { id: 'blue_green', name: 'Blue & Green', range: 'OG Pack', c1: '#0066CC', c2: '#00AA44' },
+  { id: 'purple_yellow', name: 'Purple & Yellow', range: 'OG Expansion', c1: '#8B5CF6', c2: '#FBBF24' },
+  { id: 'red_black', name: 'Red & Black', range: 'Pro Pack', c1: '#DC2626', c2: '#1F2937' },
+  { id: 'pink_gray', name: 'Pink & Gray', range: 'Pro Pack', c1: '#EC4899', c2: '#6B7280' },
+  { id: 'fire_ice', name: 'Fire & Ice', range: 'Pro Pack', c1: '#FF4500', c2: '#00CED1' },
+  { id: 'neon', name: 'Neon', range: 'Pro Pack', c1: '#39FF14', c2: '#FF1493' },
+  { id: 'usa', name: 'USA', range: 'Pro Pack', c1: '#B22234', c2: '#3C3B6E' },
+  { id: 'retro', name: 'Retro', range: 'Pro Pack', c1: '#F97316', c2: '#14B8A6' },
+  { id: 'bleen_yurple', name: 'Bleen & Yurple', range: 'Pro Pack', c1: '#0088AA', c2: '#9966CC' },
+  { id: 'gold_black', name: 'Gold & Black', range: 'Elite', c1: '#FFD700', c2: '#1A1A1A' },
+  { id: 'silver_gold', name: 'Silver & Gold', range: 'Elite', c1: '#C0C0C0', c2: '#FFD700' },
+  { id: 'christmas', name: 'Christmas', range: 'Seasonal', c1: '#C41E3A', c2: '#228B22' },
+];
+
+const LOCAL_KEY = 'popdarts_v52';
+const STATS_KEY = 'popdarts_stats_v52';
+
+// =============================================================================
+// DATA
+// =============================================================================
+
+function loadLocal() {
+  try {
+    const saved = localStorage.getItem(LOCAL_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return { players: [], target: 21, draw: [], grandFinalExists: false, pausedGame: null, lastSync: 0 };
+}
+
+function loadStats() {
+  try {
+    const saved = localStorage.getItem(STATS_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return [];
+}
+
+function saveLocal() { localStorage.setItem(LOCAL_KEY, JSON.stringify(DATA)); }
+function saveStats() { localStorage.setItem(STATS_KEY, JSON.stringify(STATS)); }
+
+let DATA = loadLocal();
+let STATS = loadStats();
+let syncInterval = null;
+let lastSyncTime = DATA.lastSync || 0;
+let isConnected = false;
+
+let GAME = { p1Name: '', p2Name: '', p1Color: null, p2Color: null, p1Score: 0, p2Score: 0, drawIndex: -1, isChamp: false, isGrandFinal: false, colorPhase: 0, selectedColor: null };
+
+// =============================================================================
+// GOOGLE SHEETS SYNC
+// =============================================================================
+
+async function syncFromSheet() {
+  const dot = document.getElementById('sync-dot');
+  const label = document.getElementById('sync-label');
+  dot.classList.add('syncing');
+  label.textContent = 'Syncing...';
+  
+  try {
+    // Fetch players
+    const playersRes = await fetch(API_URL + '?action=players');
+    const playersData = await playersRes.json();
+    if (playersData.success && playersData.data?.players) {
+      DATA.players = playersData.data.players.filter(p => p && p.trim());
+    }
+    
+    // Fetch draw
+    const drawRes = await fetch(API_URL + '?action=draw');
+    const drawData = await drawRes.json();
+    if (drawData.success && drawData.data) {
+      if (drawData.data.games) {
+        DATA.draw = drawData.data.games.map(g => ({
+          id: g.id, gameNum: g.gameNum, player1: g.player1, player2: g.player2,
+          score1: g.score1, score2: g.score2, winner: g.winner, isGrandFinal: false
+        }));
+      }
+      if (drawData.data.grandFinal && drawData.data.grandFinal.player1) {
+        const gf = drawData.data.grandFinal;
+        DATA.grandFinalExists = true;
+        const existingGF = DATA.draw.find(g => g.isGrandFinal);
+        if (!existingGF) {
+          DATA.draw.push({
+            id: 'GF', gameNum: 'GF', player1: gf.player1, player2: gf.player2,
+            score1: gf.score1, score2: gf.score2, winner: gf.winner, isGrandFinal: true
+          });
+        }
+      }
+      if (drawData.data.targetScore) DATA.target = drawData.data.targetScore;
+    }
+    
+    // Fetch stats
+    const statsRes = await fetch(API_URL + '?action=stats');
+    const statsData = await statsRes.json();
+    if (statsData.success && statsData.data?.stats) {
+      STATS = statsData.data.stats.map(s => ({
+        name: s.name, gp: s.gamesPlayed || 0, w: s.wins || 0, l: s.losses || 0,
+        pf: s.pointsFor || 0, pa: s.pointsAgainst || 0, diff: s.pointsDiff || 0,
+        championships: s.championships || 0
+      }));
+      saveStats();
+    }
+    
+    lastSyncTime = Date.now();
+    DATA.lastSync = lastSyncTime;
+    saveLocal();
+    isConnected = true;
+    
+    dot.classList.remove('syncing');
+    dot.classList.add('connected');
+    label.textContent = 'Synced';
+    
+    updateSyncStatusBar(true);
+    updateHomeUI();
+    return true;
+    
+  } catch(e) {
+    console.error('Sync failed:', e);
+    dot.classList.remove('syncing', 'connected');
+    label.textContent = 'Offline';
+    isConnected = false;
+    updateSyncStatusBar(false);
+    return false;
+  }
+}
+
+async function pushToSheet(action, data = {}) {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action, ...data })
+    });
+    const result = await res.json();
+    return result.success;
+  } catch(e) {
+    console.error('Push failed:', e);
+    return false;
+  }
+}
+
+function manualSync() {
+  syncFromSheet().then(success => {
+    toast(success ? '✓ Synced with Google Sheet!' : '✗ Sync failed - using local data', success ? 'success' : 'error');
+  });
+}
+
+function updateSyncStatusBar(connected) {
+  const bar = document.getElementById('sync-status-bar');
+  const settingsStatus = document.getElementById('settings-sync-status');
+  
+  const timeAgo = lastSyncTime ? getTimeAgo(lastSyncTime) : 'Never';
+  
+  if (connected) {
+    bar.innerHTML = `<div class="sync-info">✓ Connected to Google Sheet<div class="last-sync">Last sync: ${timeAgo}</div></div>`;
+    if (settingsStatus) settingsStatus.innerHTML = `<span style="color:var(--green)">✓ Connected</span> • Last sync: ${timeAgo}`;
+  } else {
+    bar.innerHTML = `<div class="sync-info error">⚠ Offline - changes saved locally<div class="last-sync">Last sync: ${timeAgo}</div></div>`;
+    if (settingsStatus) settingsStatus.innerHTML = `<span style="color:var(--red)">✗ Offline</span> • Last sync: ${timeAgo}`;
+  }
+}
+
+function getTimeAgo(timestamp) {
+  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+  if (seconds < 60) return 'Just now';
+  if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+  if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+  return new Date(timestamp).toLocaleDateString();
+}
+
+function startAutoSync() {
+  if (syncInterval) clearInterval(syncInterval);
+  syncInterval = setInterval(() => {
+    if (document.visibilityState === 'visible' && navigator.onLine) {
+      syncFromSheet();
+    }
+  }, 30000);
+}
+
+// =============================================================================
+// NAVIGATION
+// =============================================================================
+
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => showScreen(item.dataset.screen));
+});
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.screen === name));
+  document.getElementById('main-nav').style.display = (name === 'game' || name === 'color') ? 'none' : 'flex';
+  if (name === 'home') updateHomeUI();
+  if (name === 'settings') {
+    document.getElementById('target-select').value = DATA.target;
+    renderPlayerList();
+    updateSyncStatusBar(isConnected);
+  }
+}
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+  document.getElementById('tab-' + tab).style.display = 'block';
+}
+
+// =============================================================================
+// HOME UI
+// =============================================================================
+
+function updateHomeUI() {
+  const standings = computeStandings();
+  const completedRegular = DATA.draw.filter(g => !g.isGrandFinal && g.winner).length;
+  const totalRegular = DATA.draw.filter(g => !g.isGrandFinal).length;
+  
+  document.getElementById('stat-players').textContent = DATA.players.length;
+  document.getElementById('stat-games').textContent = totalRegular > 0 ? `${completedRegular}/${totalRegular}` : '0';
+  document.getElementById('stat-target').textContent = DATA.target;
+  
+  const leader = standings.length > 0 ? standings[0].name : '-';
+  document.getElementById('stat-leader').textContent = leader.length > 6 ? leader.substring(0,5) + '..' : leader;
+  
+  renderPausedGame();
+  renderNextGame();
+  renderDraw();
+  renderStandings(standings);
+  renderAllTimeStats();
+}
+
+function renderPausedGame() {
+  const container = document.getElementById('paused-container');
+  if (!DATA.pausedGame) { container.innerHTML = ''; return; }
+  const g = DATA.pausedGame;
+  container.innerHTML = `<div class="paused-banner" onclick="resumePausedGame()"><div class="info"><div class="label">⏸ PAUSED GAME</div><div class="players">${g.p1Name} vs ${g.p2Name}</div><div class="score">${g.p1Score} - ${g.p2Score}</div></div><button class="resume">Resume</button></div>`;
+}
+
+function renderNextGame() {
+  const container = document.getElementById('next-game-container');
+  const next = getNextGame();
+  if (!next) {
+    container.innerHTML = DATA.draw.length === 0 
+      ? `<div class="next-game" onclick="showScreen('settings')"><div class="label">NO CHAMPIONSHIP</div><div style="font-size:14px;margin-top:6px;">Tap to generate</div></div>`
+      : `<div class="next-game"><div class="label">ALL GAMES COMPLETE</div></div>`;
+    return;
+  }
+  const game = next.game;
+  const isGF = game.isGrandFinal;
+  container.innerHTML = `<div class="next-game ${isGF ? 'gf' : ''}" onclick="playNextGame()"><div class="label">${isGF ? '🏆 GRAND FINAL 🏆' : 'NEXT UP - GAME ' + game.gameNum}</div><div class="players">${game.player1} vs ${game.player2}</div><div class="cta">TAP TO PLAY</div></div>`;
+}
+
+function renderDraw() {
+  const container = document.getElementById('tab-draw');
+  if (DATA.draw.length === 0) { container.innerHTML = '<div class="empty"><div class="icon">📋</div><h3>No games yet</h3></div>'; return; }
+  let html = '';
+  DATA.draw.forEach((g, i) => {
+    const done = !!g.winner;
+    const isGF = g.isGrandFinal;
+    html += `<div class="draw-game ${done ? 'done' : ''} ${isGF ? 'gf' : ''}" onclick="${done ? '' : `playDrawGame(${i})`}"><div class="num">${isGF ? '🏆' : g.gameNum}</div><div class="names"><span class="${g.winner === g.player1 ? 'winner' : ''}">${g.player1}</span> vs <span class="${g.winner === g.player2 ? 'winner' : ''}">${g.player2}</span></div><div class="score">${done ? g.score1 + '-' + g.score2 : '-'}</div></div>`;
+  });
+  container.innerHTML = html;
+}
+
+function renderStandings(standings) {
+  const container = document.getElementById('tab-standings');
+  if (!standings || standings.length === 0) { container.innerHTML = '<div class="empty"><div class="icon">📊</div><h3>No standings</h3></div>'; return; }
+  let html = '<table class="data-table"><thead><tr><th>Player</th><th>W</th><th>L</th><th>PF</th><th>PA</th><th>+/-</th></tr></thead><tbody>';
+  standings.forEach((p, i) => {
+    const diffStr = p.diff > 0 ? '+' + p.diff : String(p.diff);
+    const diffColor = p.diff > 0 ? 'var(--green)' : p.diff < 0 ? 'var(--red)' : 'var(--text-dim)';
+    html += `<tr class="${i === 0 ? 'leader' : ''}"><td>${p.name}</td><td>${p.w}</td><td>${p.l}</td><td>${p.pf}</td><td>${p.pa}</td><td style="color:${diffColor}">${diffStr}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function renderAllTimeStats() {
+  const container = document.getElementById('tab-stats');
+  if (STATS.length === 0) { container.innerHTML = '<div class="empty"><div class="icon">🏆</div><h3>No all-time stats</h3></div>'; return; }
+  const sorted = [...STATS].sort((a, b) => b.championships - a.championships || b.w - a.w || b.diff - a.diff);
+  let html = '<table class="data-table"><thead><tr><th>Player</th><th>GP</th><th>W</th><th>L</th><th>%</th><th>+/-</th><th>🏆</th></tr></thead><tbody>';
+  sorted.forEach((s, i) => {
+    const pct = s.gp > 0 ? Math.round((s.w / s.gp) * 100) + '%' : '0%';
+    const diffStr = s.diff > 0 ? '+' + s.diff : String(s.diff);
+    const diffColor = s.diff > 0 ? 'var(--green)' : s.diff < 0 ? 'var(--red)' : 'var(--text-dim)';
+    html += `<tr class="${s.championships > 0 && i === 0 ? 'leader' : ''}"><td>${s.name}</td><td>${s.gp}</td><td>${s.w}</td><td>${s.l}</td><td>${pct}</td><td style="color:${diffColor}">${diffStr}</td><td style="color:${s.championships > 0 ? '#ffd700' : 'var(--text-dim)'};font-weight:900">${s.championships || 0}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+// =============================================================================
+// COLOR SELECTION
+// =============================================================================
+
+function openColorSelect(phase, playerName) {
+  GAME.colorPhase = phase;
+  GAME.selectedColor = null;
+  document.getElementById('color-step').textContent = phase === 1 ? 'STEP 1 OF 2' : 'STEP 2 OF 2';
+  document.getElementById('color-player-name').textContent = playerName;
+  document.getElementById('color-confirm-btn').disabled = true;
+  
+  const grid = document.getElementById('color-grid');
+  grid.innerHTML = '';
+  DART_COLORS.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'color-card';
+    if (phase === 2 && GAME.p1Color && GAME.p1Color.id === c.id) card.classList.add('disabled');
+    card.innerHTML = `<div class="color-swatch"><div class="half" style="background:${c.c1}"></div><div class="half" style="background:${c.c2}"></div></div><div class="name">${c.name}</div><div class="range">${c.range}</div>`;
+    card.onclick = () => {
+      if (card.classList.contains('disabled')) return;
+      document.querySelectorAll('.color-card').forEach(x => x.classList.remove('selected'));
+      card.classList.add('selected');
+      GAME.selectedColor = c;
+      document.getElementById('color-confirm-btn').disabled = false;
+    };
+    grid.appendChild(card);
+  });
+  showScreen('color');
+}
+
+function confirmColorSelect() {
+  if (!GAME.selectedColor) return;
+  if (GAME.colorPhase === 1) { GAME.p1Color = GAME.selectedColor; openColorSelect(2, GAME.p2Name); }
+  else { GAME.p2Color = GAME.selectedColor; startGameplay(); }
+}
+
+function cancelColorSelect() { showScreen('home'); }
+
+// =============================================================================
+// GAMEPLAY
+// =============================================================================
+
+function getNextGame() {
+  for (let i = 0; i < DATA.draw.length; i++) if (!DATA.draw[i].isGrandFinal && !DATA.draw[i].winner) return { index: i, game: DATA.draw[i] };
+  for (let i = DATA.draw.length - 1; i >= 0; i--) if (DATA.draw[i].isGrandFinal && !DATA.draw[i].winner) return { index: i, game: DATA.draw[i] };
+  return null;
+}
+
+function playNextGame() {
+  const next = getNextGame();
+  if (!next) { toast(DATA.draw.length === 0 ? 'Generate a championship first' : 'All games complete!', DATA.draw.length === 0 ? 'error' : 'success'); return; }
+  playDrawGame(next.index);
+}
+
+function playDrawGame(index) {
+  const game = DATA.draw[index];
+  if (!game || game.winner) return;
+  GAME.p1Name = game.player1; GAME.p2Name = game.player2;
+  GAME.drawIndex = index; GAME.isChamp = true; GAME.isGrandFinal = game.isGrandFinal;
+  openColorSelect(1, game.player1);
+}
+
+function startCustomSetup() {
+  if (DATA.players.length < 2) { toast('Add at least 2 players', 'error'); return; }
+  GAME.p1Name = DATA.players[0]; GAME.p2Name = DATA.players[1] || DATA.players[0];
+  GAME.drawIndex = -1; GAME.isChamp = false; GAME.isGrandFinal = false;
+  openColorSelect(1, GAME.p1Name);
+}
+
+function startGameplay() {
+  GAME.p1Score = 0; GAME.p2Score = 0;
+  document.getElementById('p1-name').textContent = GAME.p1Name;
+  document.getElementById('p2-name').textContent = GAME.p2Name;
+  document.getElementById('p1-dot').style.background = `linear-gradient(135deg, ${GAME.p1Color.c1}, ${GAME.p1Color.c2})`;
+  document.getElementById('p2-dot').style.background = `linear-gradient(135deg, ${GAME.p2Color.c1}, ${GAME.p2Color.c2})`;
+  document.getElementById('game-target').textContent = DATA.target;
+  const labelEl = document.getElementById('game-label');
+  if (GAME.isGrandFinal) { labelEl.textContent = '🏆 GRAND FINAL'; labelEl.classList.add('gf'); }
+  else if (GAME.isChamp && GAME.drawIndex >= 0) { labelEl.textContent = 'Game ' + DATA.draw[GAME.drawIndex].gameNum; labelEl.classList.remove('gf'); }
+  else { labelEl.textContent = 'Custom Match'; labelEl.classList.remove('gf'); }
+  updateGameDisplay();
+  showScreen('game');
+}
+
+function addScore(player, amount) {
+  if (player === 1) {
+    GAME.p1Score = Math.max(0, GAME.p1Score + amount);
+    if (GAME.p1Score >= DATA.target) { GAME.p1Score = DATA.target; updateGameDisplay(); declareWinner(GAME.p1Name, GAME.p1Score, GAME.p2Score); return; }
+  } else {
+    GAME.p2Score = Math.max(0, GAME.p2Score + amount);
+    if (GAME.p2Score >= DATA.target) { GAME.p2Score = DATA.target; updateGameDisplay(); declareWinner(GAME.p2Name, GAME.p2Score, GAME.p1Score); return; }
+  }
+  updateGameDisplay();
+}
+
+function updateGameDisplay() {
+  document.getElementById('p1-score').textContent = GAME.p1Score;
+  document.getElementById('p2-score').textContent = GAME.p2Score;
+  const pct1 = Math.min(100, (GAME.p1Score / DATA.target) * 100);
+  const pct2 = Math.min(100, (GAME.p2Score / DATA.target) * 100);
+  document.getElementById('p1-fill').style.height = pct1 + '%';
+  document.getElementById('p1-fill').style.background = `linear-gradient(to top, ${GAME.p1Color.c1}, ${GAME.p1Color.c2})`;
+  document.getElementById('p2-fill').style.height = pct2 + '%';
+  document.getElementById('p2-fill').style.background = `linear-gradient(to bottom, ${GAME.p2Color.c1}, ${GAME.p2Color.c2})`;
+}
+
+function resetScores() { if (confirm('Reset scores to 0-0?')) { GAME.p1Score = 0; GAME.p2Score = 0; updateGameDisplay(); } }
+
+function pauseGame() {
+  DATA.pausedGame = { p1Name: GAME.p1Name, p2Name: GAME.p2Name, p1Color: GAME.p1Color, p2Color: GAME.p2Color, p1Score: GAME.p1Score, p2Score: GAME.p2Score, drawIndex: GAME.drawIndex, isChamp: GAME.isChamp, isGrandFinal: GAME.isGrandFinal };
+  saveLocal();
+  toast('Game paused', 'success');
+  showScreen('home');
+}
+
+function resumePausedGame() {
+  if (!DATA.pausedGame) return;
+  const g = DATA.pausedGame;
+  GAME = { ...GAME, ...g };
+  DATA.pausedGame = null;
+  saveLocal();
+  document.getElementById('p1-name').textContent = GAME.p1Name;
+  document.getElementById('p2-name').textContent = GAME.p2Name;
+  document.getElementById('p1-dot').style.background = `linear-gradient(135deg, ${GAME.p1Color.c1}, ${GAME.p1Color.c2})`;
+  document.getElementById('p2-dot').style.background = `linear-gradient(135deg, ${GAME.p2Color.c1}, ${GAME.p2Color.c2})`;
+  document.getElementById('game-target').textContent = DATA.target;
+  const labelEl = document.getElementById('game-label');
+  if (GAME.isGrandFinal) { labelEl.textContent = '🏆 GRAND FINAL'; labelEl.classList.add('gf'); }
+  else if (GAME.isChamp && GAME.drawIndex >= 0) { labelEl.textContent = 'Game ' + DATA.draw[GAME.drawIndex].gameNum; labelEl.classList.remove('gf'); }
+  else { labelEl.textContent = 'Custom Match'; labelEl.classList.remove('gf'); }
+  updateGameDisplay();
+  showScreen('game');
+}
+
+function declareWinner(name, winScore, loseScore) {
+  document.getElementById('win-name').textContent = name;
+  document.getElementById('win-result').textContent = `${winScore} - ${loseScore}`;
+  document.getElementById('win-save').style.display = GAME.isChamp ? 'inline-block' : 'none';
+  document.getElementById('win-overlay').classList.add('active');
+  launchConfetti();
+}
+
+function saveWin() {
+  const winner = GAME.p1Score >= DATA.target ? GAME.p1Name : GAME.p2Name;
+  
+  if (GAME.drawIndex >= 0) {
+    const game = DATA.draw[GAME.drawIndex];
+    game.winner = winner;
+    game.score1 = GAME.p1Score;
+    game.score2 = GAME.p2Score;
+    
+    // Push to Google Sheet
+    pushToSheet('submitGame', {
+      gameId: game.id,
+      player1: game.player1,
+      player2: game.player2,
+      score1: game.score1,
+      score2: game.score2
+    });
+    
+    updateAllTimeStats(GAME.p1Name, GAME.p2Name, winner, GAME.p1Score, GAME.p2Score, GAME.isGrandFinal);
+    
+    if (GAME.isGrandFinal) {
+      const stat = STATS.find(s => s.name === winner);
+      if (stat) stat.championships++;
+      saveStats();
+      toast('🏆 Championship saved!', 'success');
+    } else {
+      checkForGrandFinal();
+      toast('Game saved & synced!', 'success');
+    }
+  }
+  
+  DATA.pausedGame = null;
+  saveLocal();
+  exitFromWin();
+}
+
+function updateAllTimeStats(p1, p2, winner, s1, s2, isGF) {
+  [p1, p2].forEach(name => {
+    let stat = STATS.find(s => s.name === name);
+    if (!stat) { stat = { name, gp: 0, w: 0, l: 0, pf: 0, pa: 0, diff: 0, championships: 0 }; STATS.push(stat); }
+    if (!isGF) stat.gp++;
+  });
+  const s1Stat = STATS.find(s => s.name === p1);
+  const s2Stat = STATS.find(s => s.name === p2);
+  if (s1Stat) { if (winner === p1) s1Stat.w++; else s1Stat.l++; s1Stat.pf += s1; s1Stat.pa += s2; s1Stat.diff += (s1 - s2); }
+  if (s2Stat) { if (winner === p2) s2Stat.w++; else s2Stat.l++; s2Stat.pf += s2; s2Stat.pa += s1; s2Stat.diff += (s2 - s1); }
+  saveStats();
+}
+
+function checkForGrandFinal() {
+  const regularGames = DATA.draw.filter(g => !g.isGrandFinal);
+  const incomplete = regularGames.filter(g => !g.winner);
+  if (incomplete.length === 0 && !DATA.grandFinalExists && regularGames.length > 0) {
+    const standings = computeStandings();
+    if (standings.length >= 2) {
+      DATA.grandFinalExists = true;
+      DATA.draw.push({ id: DATA.draw.length + 1, gameNum: 'GF', player1: standings[0].name, player2: standings[1].name, score1: null, score2: null, winner: null, isGrandFinal: true });
+      saveLocal();
+      toast('🏆 Grand Final Ready!', 'success');
+    }
+  }
+}
+
+function playAgain() { document.getElementById('win-overlay').classList.remove('active'); GAME.p1Score = 0; GAME.p2Score = 0; updateGameDisplay(); }
+function exitFromWin() { document.getElementById('win-overlay').classList.remove('active'); showScreen('home'); }
+
+function computeStandings() {
+  const statsMap = new Map();
+  DATA.players.forEach(p => statsMap.set(p, { name: p, w: 0, l: 0, pf: 0, pa: 0, diff: 0 }));
+  DATA.draw.forEach(game => {
+    if (game.isGrandFinal || !game.winner || game.score1 === null) return;
+    const p1 = game.player1, p2 = game.player2, w = game.winner;
+    if (statsMap.has(p1)) { const s = statsMap.get(p1); if (w === p1) s.w++; else s.l++; s.pf += game.score1; s.pa += game.score2; s.diff += (game.score1 - game.score2); }
+    if (statsMap.has(p2)) { const s = statsMap.get(p2); if (w === p2) s.w++; else s.l++; s.pf += game.score2; s.pa += game.score1; s.diff += (game.score2 - game.score1); }
+  });
+  return Array.from(statsMap.values()).sort((a, b) => (b.w - a.w) || (b.diff - a.diff));
+}
+
+// =============================================================================
+// PLAYERS & CHAMPIONSHIP
+// =============================================================================
+
+function renderPlayerList() {
+  const container = document.getElementById('player-list');
+  if (DATA.players.length === 0) { container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-dim);">No players yet</div>'; return; }
+  container.innerHTML = DATA.players.map((p, i) => {
+    const stat = STATS.find(s => s.name === p) || { gp: 0, w: 0, championships: 0 };
+    return `<div class="player-row"><div class="avatar">${p.charAt(0).toUpperCase()}</div><div class="info"><div class="name">${stat.championships > 0 ? '🏆 ' : ''}${p}</div><div class="stats">${stat.gp} games • ${stat.w} wins${stat.championships > 0 ? ' • ' + stat.championships + '× champ' : ''}</div></div><button class="delete" onclick="removePlayer(${i})">×</button></div>`;
+  }).join('');
+}
+
+function addPlayer() {
+  const input = document.getElementById('new-player-input');
+  const name = input.value.trim();
+  if (!name) { toast('Enter a name', 'error'); return; }
+  if (DATA.players.some(p => p.toLowerCase() === name.toLowerCase())) { toast('Player already exists', 'error'); return; }
+  DATA.players.push(name);
+  saveLocal();
+  
+  // Push to Google Sheet
+  pushToSheet('addPlayer', { playerName: name });
+  
+  input.value = '';
+  renderPlayerList();
+  toast('Player added & synced!', 'success');
+}
+
+function removePlayer(index) {
+  const name = DATA.players[index];
+  if (!confirm(`Remove ${name}?`)) return;
+  DATA.players.splice(index, 1);
+  saveLocal();
+  renderPlayerList();
+  toast('Player removed', 'success');
+}
+
+document.getElementById('new-player-input').addEventListener('keypress', e => { if (e.key === 'Enter') addPlayer(); });
+
+function generateChampionship() {
+  if (DATA.players.length < 2) { toast('Need at least 2 players', 'error'); return; }
+  if (DATA.draw.length > 0 && !confirm('This will replace the current draw. Stats are kept. Continue?')) return;
+  
+  const pairs = [];
+  for (let i = 0; i < DATA.players.length; i++) for (let j = i + 1; j < DATA.players.length; j++) pairs.push([DATA.players[i], DATA.players[j]]);
+  for (let i = pairs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pairs[i], pairs[j]] = [pairs[j], pairs[i]]; }
+  
+  DATA.draw = pairs.map((pair, i) => ({ id: i + 1, gameNum: i + 1, player1: pair[0], player2: pair[1], score1: null, score2: null, winner: null, isGrandFinal: false }));
+  DATA.grandFinalExists = false;
+  DATA.pausedGame = null;
+  saveLocal();
+  
+  // Push to Google Sheet
+  pushToSheet('generateDraw');
+  
+  toast(`Championship: ${pairs.length} games`, 'success');
+  showScreen('home');
+}
+
+function newEvent() {
+  if (!confirm('Start new event? Stats will be kept.')) return;
+  DATA.draw = []; DATA.grandFinalExists = false; DATA.pausedGame = null;
+  saveLocal();
+  pushToSheet('newEvent');
+  toast('New event started', 'success');
+  updateHomeUI();
+}
+
+function changeTarget() {
+  DATA.target = parseInt(document.getElementById('target-select').value) || 21;
+  saveLocal();
+  toast('Target updated', 'success');
+}
+
+// =============================================================================
+// UTILITIES
+// =============================================================================
+
+function toast(msg, type = 'success') { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'toast show ' + type; setTimeout(() => t.classList.remove('show'), 2500); }
+
+function launchConfetti() {
+  const colors = GAME.p1Color && GAME.p2Color ? [GAME.p1Color.c1, GAME.p1Color.c2, GAME.p2Color.c1, GAME.p2Color.c2] : ['#f59e0b', '#10b981', '#3b82f6', '#ef4444'];
+  for (let i = 0; i < 60; i++) setTimeout(() => { const c = document.createElement('div'); c.className = 'confetti'; c.style.left = Math.random() * 100 + 'vw'; c.style.background = colors[Math.floor(Math.random() * colors.length)]; c.style.animationDuration = (2 + Math.random() * 2) + 's'; document.body.appendChild(c); setTimeout(() => c.remove(), 4000); }, i * 25);
+}
+
+// =============================================================================
+// INIT
+// =============================================================================
+
+updateHomeUI();
+syncFromSheet();
+startAutoSync();
+</script>
+</body>
+</html>
