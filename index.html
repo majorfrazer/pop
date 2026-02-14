@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PopDarts">
+  <meta name="theme-color" content="#0a0a14">
+  <title>PopDarts</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+    :root{--bg:#0a0a14;--card:#151520;--elev:#1e1e2d;--border:rgba(255,255,255,.08);--text:#fff;--dim:#a0a0b8;--muted:#606078;--gold:#f5a623;--green:#00d68f;--red:#ff4757;--blue:#3b82f6;--st:env(safe-area-inset-top,0);--sb:env(safe-area-inset-bottom,0)}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
+    html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh}
+    .screen{position:fixed;inset:0;display:none;flex-direction:column;background:var(--bg);z-index:10;overflow:hidden}
+    .screen.active{display:flex}
+    .hdr{display:flex;align-items:center;justify-content:space-between;padding:calc(12px + var(--st)) 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
+    .logo{display:flex;align-items:center;gap:8px;font-size:20px;font-weight:800}
+    .sync{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:600;color:var(--dim);cursor:pointer}
+    .sync:active{transform:scale(.95)}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+    .dot.ok{background:var(--green)}
+    .dot.busy{background:var(--gold);animation:blink .4s infinite alternate}
+    @keyframes blink{to{opacity:.3}}
+    .content{flex:1;overflow-y:auto;padding:14px;padding-bottom:calc(90px + var(--sb))}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
+    .card-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px}
+    .live-banner{background:linear-gradient(135deg,#082818,#051810);border:2px solid var(--green);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;animation:glow 2s infinite alternate}
+    @keyframes glow{to{box-shadow:0 0 20px rgba(0,214,143,.3)}}
+    .live-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .live-badge{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--green);letter-spacing:1px}
+    .live-pulse{width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 1s infinite}
+    @keyframes pulse{50%{transform:scale(1.4);opacity:.5}}
+    .live-join{padding:8px 16px;background:var(--green);color:#000;font-size:12px;font-weight:700;border:none;border-radius:8px}
+    .live-players{font-size:16px;font-weight:700}
+    .live-score{font-size:32px;font-weight:900;color:var(--gold)}
+    .paused-banner{background:linear-gradient(135deg,#101830,#0c1420);border:2px solid var(--blue);border-radius:16px;padding:14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+    .paused-info .label{font-size:10px;font-weight:700;color:var(--blue);letter-spacing:1px}
+    .paused-info .players{font-size:14px;font-weight:700;margin-top:2px}
+    .paused-info .score{font-size:11px;color:var(--dim)}
+    .paused-btn{padding:8px 16px;background:var(--blue);color:#fff;font-size:12px;font-weight:700;border:none;border-radius:8px}
+    .hero{background:linear-gradient(135deg,#181830,#202045);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:24px 18px;margin-bottom:14px;text-align:center;position:relative;overflow:hidden}
+    .hero::before{content:'🎯';position:absolute;font-size:80px;opacity:.06;right:-10px;top:-10px}
+    .hero-tag{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--gold);margin-bottom:8px}
+    .hero-match{font-size:22px;font-weight:800;line-height:1.3}
+    .hero-vs{display:block;font-size:12px;color:var(--muted);margin:4px 0}
+    .hero-btn{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:12px 28px;background:linear-gradient(135deg,var(--gold),#c78515);color:#000;font-size:15px;font-weight:800;border:none;border-radius:30px;cursor:pointer}
+    .hero-btn:active{transform:scale(.97)}
+    .hero.gf{border-color:#ffd700}
+    .hero.gf .hero-tag{color:#ffd700}
+    .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+    .act{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 8px;text-align:center;cursor:pointer}
+    .act:active{transform:scale(.97);background:var(--elev)}
+    .act.gold{background:linear-gradient(135deg,var(--gold),#c78515);border:none}
+    .act-icon{font-size:24px;margin-bottom:4px}
+    .act-text{font-size:11px;font-weight:700}
+    .act.gold .act-text{color:#000}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+    .stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 6px;text-align:center}
+    .stat-icon{font-size:16px}
+    .stat-val{font-size:22px;font-weight:900;color:var(--gold)}
+    .stat-name{font-size:8px;font-weight:600;text-transform:uppercase;color:var(--muted);margin-top:2px}
+    .tabs{display:flex;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:12px}
+    .tab{flex:1;padding:8px 4px;text-align:center;font-size:10px;font-weight:600;color:var(--muted);background:none;border:none;border-radius:7px;cursor:pointer}
+    .tab.on{background:var(--gold);color:#000}
+    .tbl{width:100%;border-collapse:collapse;font-size:11px}
+    .tbl th{padding:6px 4px;text-align:center;font-size:8px;font-weight:700;text-transform:uppercase;color:var(--muted);background:rgba(255,255,255,.03)}
+    .tbl th:first-child{text-align:left;padding-left:8px;border-radius:6px 0 0 6px}
+    .tbl th:last-child{border-radius:0 6px 6px 0}
+    .tbl td{padding:8px 4px;text-align:center;border-bottom:1px solid var(--border)}
+    .tbl td:first-child{text-align:left;padding-left:8px;font-weight:600}
+    .tbl .top td{background:rgba(245,166,35,.1)}
+    .plus{color:var(--green)}
+    .minus{color:var(--red)}
+    .draw-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:6px;cursor:pointer}
+    .draw-row:active{background:var(--elev)}
+    .draw-row.done{opacity:.5}
+    .draw-row.gf{border-color:#ffd700;background:rgba(255,215,0,.05)}
+    .draw-num{width:30px;height:30px;background:var(--elev);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+    .draw-row.done .draw-num{background:var(--green);color:#000}
+    .draw-players{flex:1;font-size:12px;font-weight:600}
+    .draw-players .win{color:var(--green)}
+    .draw-result{font-size:13px;font-weight:800;color:var(--gold);min-width:40px;text-align:center}
+    .draw-undo{width:24px;height:24px;background:rgba(255,71,87,.15);border:none;border-radius:6px;color:var(--red);font-size:12px;cursor:pointer}
+    .btn{width:100%;padding:12px;border-radius:10px;border:none;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px}
+    .btn:active{transform:scale(.98)}
+    .btn-gold{background:var(--gold);color:#000}
+    .btn-gray{background:var(--elev);color:var(--text);border:1px solid var(--border)}
+    .btn-red{background:rgba(255,71,87,.15);color:var(--red)}
+    .btn-green{background:var(--green);color:#000}
+    .nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,20,.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:6px 14px calc(6px + var(--sb));z-index:100}
+    .nav-btn{flex:1;padding:6px 0;text-align:center;font-size:9px;font-weight:600;color:var(--muted);background:none;border:none;border-radius:8px;cursor:pointer}
+    .nav-btn.on{color:var(--gold);background:rgba(245,166,35,.1)}
+    .nav-icon{font-size:18px;display:block;margin-bottom:2px}
+    input,select{width:100%;padding:10px 12px;background:var(--elev);border:1px solid var(--border);color:var(--text);border-radius:8px;font-family:inherit;font-size:14px;margin-bottom:6px}
+    input:focus,select:focus{outline:none;border-color:var(--gold)}
+    .player-row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+    .player-avatar{width:32px;height:32px;background:linear-gradient(135deg,#a855f7,var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;margin-right:10px}
+    .player-info{flex:1}
+    .player-info .name{font-weight:700;font-size:13px}
+    .player-info .meta{font-size:10px;color:var(--muted)}
+    .player-del{width:28px;height:28px;background:rgba(255,71,87,.15);border:none;border-radius:50%;color:var(--red);font-size:14px;cursor:pointer}
+    .empty{text-align:center;padding:24px;color:var(--muted)}
+    .empty-icon{font-size:36px;margin-bottom:8px;opacity:.5}
+    .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--elev);border:1px solid var(--border);padding:10px 18px;border-radius:10px;font-size:12px;font-weight:600;z-index:700;opacity:0;transition:opacity .3s}
+    .toast.show{opacity:1}
+    .toast.ok{border-left:3px solid var(--green)}
+    .toast.err{border-left:3px solid var(--red)}
+    .dart-hdr{padding:calc(16px + var(--st)) 16px 16px;background:var(--card);text-align:center;border-bottom:1px solid var(--border);position:relative;flex-shrink:0}
+    .dart-back{position:absolute;left:12px;top:calc(16px + var(--st));width:36px;height:36px;background:var(--elev);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--text)}
+    .dart-step{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);margin-bottom:4px}
+    .dart-name{font-size:22px;font-weight:800}
+    .dart-sub{font-size:12px;color:var(--dim);margin-top:4px}
+    .dart-grid{flex:1;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px;overflow-y:auto;align-content:start}
+    .dart-opt{background:var(--card);border:3px solid var(--border);border-radius:16px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+    .dart-opt:active{transform:scale(.97)}
+    .dart-opt.picked{border-color:var(--gold);box-shadow:0 0 16px rgba(245,166,35,.4)}
+    .dart-opt.off{opacity:.2;pointer-events:none}
+    .dart-shape{width:44px;height:70px;border-radius:22px}
+    .dart-label{font-size:10px;font-weight:700;text-align:center}
+    .dart-foot{padding:14px;padding-bottom:calc(14px + var(--sb));background:var(--bg);flex-shrink:0}
+    #screen-game{background:#000}
+    .game-hdr{position:absolute;top:0;left:0;right:0;padding:calc(6px + var(--st)) 10px 6px;display:flex;justify-content:space-between;align-items:center;z-index:50;background:linear-gradient(180deg,rgba(0,0,0,.9) 0%,transparent 100%)}
+    .game-menu-btn{width:42px;height:42px;background:rgba(255,255,255,.1);border:none;border-radius:10px;color:#fff;font-size:20px;cursor:pointer}
+    .game-badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+    .badge{padding:5px 10px;background:rgba(0,0,0,.7);border-radius:14px;font-size:10px;font-weight:700}
+    .badge.target{color:var(--gold)}
+    .badge.gf{background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000}
+    .badge.live{background:var(--green);color:#000;display:flex;align-items:center;gap:4px}
+    .game-arena{position:absolute;inset:0;display:flex;flex-direction:column}
+    .pzone{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;overflow:hidden}
+    .pzone.top{padding-top:60px}
+    .pzone.bot{padding-bottom:calc(14px + var(--sb))}
+    .pbar{position:absolute;top:0;bottom:0;left:0;width:0%;transition:width .4s cubic-bezier(.34,1.56,.64,1);z-index:1}
+    .pui{position:relative;z-index:10;text-align:center;width:100%}
+    .phead{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
+    .pdart{width:22px;height:36px;border-radius:11px;flex-shrink:0}
+    .pname{font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+    .score-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
+    .score-adj{width:52px;height:52px;border-radius:50%;border:3px solid rgba(255,255,255,.2);background:rgba(0,0,0,.5);color:#fff;font-size:28px;font-weight:300;display:flex;align-items:center;justify-content:center;cursor:pointer}
+    .score-adj:active{transform:scale(.9);background:rgba(255,255,255,.2)}
+    .score-adj.minus{color:var(--red);border-color:rgba(255,71,87,.4)}
+    .score-adj.plus{color:var(--green);border-color:rgba(0,214,143,.4)}
+    .score-big{font-size:64px;font-weight:900;line-height:1;min-width:90px}
+    .quick-row{display:flex;gap:6px;justify-content:center}
+    .qbtn{width:44px;height:38px;border-radius:8px;border:2px solid rgba(255,255,255,.15);background:rgba(0,0,0,.5);color:#fff;font-size:13px;font-weight:700;cursor:pointer}
+    .qbtn:active{transform:scale(.9);background:rgba(255,255,255,.15)}
+    .game-mid{height:3px;background:rgba(255,255,255,.1);position:relative;z-index:20;flex-shrink:0}
+    .reset-btn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:42px;height:42px;background:var(--card);border:2px solid var(--border);border-radius:50%;color:var(--muted);font-size:18px;cursor:pointer;z-index:21}
+    .gmenu{position:fixed;inset:0;background:rgba(0,0,0,.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:400;padding:20px;gap:10px}
+    .gmenu.on{display:flex}
+    .gmenu h2{font-size:22px;margin-bottom:14px}
+    .gmenu-btn{width:240px;padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+    .gmenu-btn.resume{background:var(--green);color:#000}
+    .gmenu-btn.end{background:var(--red);color:#fff}
+    .gmenu-btn.save{background:var(--elev);color:#fff;border:1px solid var(--border)}
+    .win{position:fixed;inset:0;background:linear-gradient(135deg,#0a0a14,#1a1a30,#0a1520);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:500;padding:20px}
+    .win.on{display:flex}
+    .win-trophy{font-size:80px;animation:bounce .6s infinite alternate}
+    @keyframes bounce{to{transform:translateY(-10px) scale(1.05)}}
+    .win-tag{font-size:12px;letter-spacing:3px;color:var(--gold);margin-top:12px}
+    .win-name{font-size:34px;font-weight:900;margin-top:6px;text-align:center}
+    .win-score{font-size:22px;color:var(--dim);margin-top:4px}
+    .win-btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;justify-content:center}
+    .win-btn{padding:12px 22px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+    .win-btn.save{background:var(--green);color:#000}
+    .win-btn.again{background:var(--gold);color:#000}
+    .win-btn.exit{background:var(--elev);color:#fff}
+    .confetti{position:fixed;width:10px;height:10px;top:-20px;animation:fall 3s linear forwards;z-index:501;border-radius:2px}
+    @keyframes fall{to{transform:translateY(100vh) rotate(720deg)}}
+    #debug{position:fixed;top:calc(10px + var(--st));right:10px;background:rgba(0,0,0,.9);border:1px solid var(--gold);border-radius:8px;padding:8px;font-size:9px;max-width:220px;max-height:180px;overflow-y:auto;z-index:1000;display:none}
+    #debug.show{display:block}
+    #debug pre{white-space:pre-wrap;word-break:break-all;color:var(--green);font-family:monospace}
+    @media(min-width:1024px){
+      .mobile-view{display:none!important}
+      .desktop-view{display:grid!important;grid-template-columns:280px 1fr 300px;height:100vh}
+      .d-panel{background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+      .d-panel:last-child{border-right:none;border-left:1px solid var(--border)}
+      .d-head{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+      .d-head h2{font-size:14px;font-weight:800}
+      .d-body{flex:1;overflow-y:auto;padding:12px}
+      .d-section{margin-bottom:16px}
+      .d-section-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px}
+      .d-center{background:var(--bg);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+      .d-game-wrap{flex:1;display:flex;flex-direction:column;margin:12px;background:#000;border-radius:14px;overflow:hidden;position:relative}
+    }
+    @media(max-width:1023px){.desktop-view{display:none!important}}
+  </style>
+</head>
+<body>
+
+<!-- MOBILE VIEW -->
+<div class="mobile-view">
+  <div id="screen-home" class="screen active">
+    <div class="hdr">
+      <div class="logo" onclick="toggleDebug()">🎯 PopDarts</div>
+      <button class="sync" onclick="sync()"><span class="dot" id="dot1"></span><span id="txt1">Sync</span></button>
+    </div>
+    <div class="content">
+      <div id="live-zone"></div>
+      <div id="paused-zone"></div>
+      <div id="hero-zone"></div>
+      <div class="actions">
+        <div class="act gold" onclick="playNext()"><div class="act-icon">▶️</div><div class="act-text">Play</div></div>
+        <div class="act" onclick="openCustom()"><div class="act-icon">🎮</div><div class="act-text">Quick</div></div>
+        <div class="act" onclick="genDraw()"><div class="act-icon">🎲</div><div class="act-text">Draw</div></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-icon">👥</div><div class="stat-val" id="s-players">0</div><div class="stat-name">Players</div></div>
+        <div class="stat"><div class="stat-icon">🎯</div><div class="stat-val" id="s-games">0/0</div><div class="stat-name">Games</div></div>
+        <div class="stat"><div class="stat-icon">🏆</div><div class="stat-val" id="s-target">21</div><div class="stat-name">Target</div></div>
+      </div>
+      <div class="tabs">
+        <button class="tab on" onclick="switchTab('draw',this)">📋 Draw</button>
+        <button class="tab" onclick="switchTab('stand',this)">📊 Standings</button>
+        <button class="tab" onclick="switchTab('all',this)">🏆 All-Time</button>
+      </div>
+      <div id="tab-draw"></div>
+      <div id="tab-stand" style="display:none"></div>
+      <div id="tab-all" style="display:none"></div>
+    </div>
+  </div>
+
+  <div id="screen-settings" class="screen">
+    <div class="hdr">
+      <div class="logo">⚙️ Settings</div>
+      <button class="sync" onclick="sync()"><span class="dot" id="dot2"></span><span id="txt2">Sync</span></button>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="card-label">☁️ Cloud Sync</div>
+        <p style="font-size:11px;color:var(--dim);margin-bottom:10px">Data syncs with Google Sheets</p>
+        <button class="btn btn-gray" onclick="sync()">🔄 Sync Now</button>
+        <div style="font-size:9px;color:var(--muted);margin-top:6px">Last: <span id="last-sync">Never</span></div>
+      </div>
+      <div class="card">
+        <div class="card-label">👥 Players</div>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <input type="text" id="inp-player" placeholder="Player name...">
+          <button class="btn btn-green" style="width:auto;padding:10px 16px" onclick="addPlayer()">+</button>
+        </div>
+        <div id="player-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">🏆 Championship</div>
+        <button class="btn btn-gold" onclick="genDraw()">🎲 Generate Draw</button>
+        <button class="btn btn-red" onclick="clearDraw()">Clear Draw</button>
+      </div>
+      <div class="card">
+        <div class="card-label">🎯 Target</div>
+        <select id="sel-target" onchange="setTarget()">
+          <option value="11">First to 11</option>
+          <option value="15">First to 15</option>
+          <option value="21" selected>First to 21</option>
+          <option value="31">First to 31</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-custom" class="screen">
+    <div class="hdr">
+      <button class="sync" onclick="go('home')" style="padding:8px 12px">← Back</button>
+      <div class="logo" style="font-size:16px">Quick Match</div>
+      <div style="width:60px"></div>
+    </div>
+    <div class="content">
+      <div class="card"><div class="card-label">Player 1</div><select id="sel-p1"></select></div>
+      <div class="card"><div class="card-label">Player 2</div><select id="sel-p2"></select></div>
+      <button class="btn btn-gold" onclick="startCustom()">🎮 Start Match</button>
+    </div>
+  </div>
+
+  <div id="screen-dart" class="screen">
+    <div class="dart-hdr">
+      <button class="dart-back" onclick="go('home')">←</button>
+      <div class="dart-step" id="dart-step">STEP 1 OF 2</div>
+      <div class="dart-name" id="dart-player">Player</div>
+      <div class="dart-sub">Pick your dart</div>
+    </div>
+    <div class="dart-grid" id="dart-grid"></div>
+    <div class="dart-foot">
+      <button class="btn btn-green" id="dart-confirm" onclick="confirmDart()" disabled>Select Dart</button>
+    </div>
+  </div>
+
+  <div id="screen-game" class="screen">
+    <div class="game-hdr">
+      <button class="game-menu-btn" onclick="openMenu()">☰</button>
+      <div class="game-badges">
+        <div class="badge" id="g-label">Game 1</div>
+        <div class="badge live" id="g-live" style="display:none"><span class="live-pulse" style="width:6px;height:6px;background:#000"></span>LIVE</div>
+        <div class="badge target">To: <span id="g-target">21</span></div>
+      </div>
+    </div>
+    <div class="game-arena">
+      <div class="pzone top">
+        <div class="pbar" id="bar1"></div>
+        <div class="pui">
+          <div class="phead"><div class="pdart" id="dart1"></div><span class="pname" id="name1">Player 1</span></div>
+          <div class="score-row">
+            <button class="score-adj minus" onclick="adj(1,-1)">−</button>
+            <div class="score-big" id="sc1">0</div>
+            <button class="score-adj plus" onclick="adj(1,1)">+</button>
+          </div>
+          <div class="quick-row">
+            <button class="qbtn" onclick="adj(1,2)">+2</button>
+            <button class="qbtn" onclick="adj(1,3)">+3</button>
+            <button class="qbtn" onclick="adj(1,4)">+4</button>
+            <button class="qbtn" onclick="adj(1,5)">+5</button>
+          </div>
+        </div>
+      </div>
+      <div class="game-mid"><button class="reset-btn" onclick="resetScores()">↺</button></div>
+      <div class="pzone bot">
+        <div class="pbar" id="bar2"></div>
+        <div class="pui">
+          <div class="phead"><div class="pdart" id="dart2"></div><span class="pname" id="name2">Player 2</span></div>
+          <div class="score-row">
+            <button class="score-adj minus" onclick="adj(2,-1)">−</button>
+            <div class="score-big" id="sc2">0</div>
+            <button class="score-adj plus" onclick="adj(2,1)">+</button>
+          </div>
+          <div class="quick-row">
+            <button class="qbtn" onclick="adj(2,2)">+2</button>
+            <button class="qbtn" onclick="adj(2,3)">+3</button>
+            <button class="qbtn" onclick="adj(2,4)">+4</button>
+            <button class="qbtn" onclick="adj(2,5)">+5</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav" id="nav">
+    <button class="nav-btn on" data-s="home"><span class="nav-icon">🏠</span>Home</button>
+    <button class="nav-btn" data-s="settings"><span class="nav-icon">⚙️</span>Settings</button>
+  </nav>
+</div>
+
+<!-- DESKTOP VIEW -->
+<div class="desktop-view" style="display:none">
+  <div class="d-panel">
+    <div class="d-head">
+      <h2>🎯 PopDarts</h2>
+      <button class="sync" onclick="sync()" style="padding:6px 10px;font-size:10px"><span class="dot" id="dot3"></span><span id="txt3">Sync</span></button>
+    </div>
+    <div class="d-body">
+      <div class="d-section">
+        <div class="d-section-title">👥 Players</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <input type="text" id="d-inp-player" placeholder="Add..." style="padding:8px;font-size:12px">
+          <button class="btn btn-green" style="width:auto;margin:0;padding:8px 12px;font-size:12px" onclick="addPlayerD()">+</button>
+        </div>
+        <div id="d-player-list"></div>
+      </div>
+      <div class="d-section">
+        <div class="d-section-title">📋 Draw</div>
+        <div id="d-draw"></div>
+      </div>
+      <div class="d-section">
+        <button class="btn btn-gold" style="font-size:12px;padding:10px" onclick="genDraw()">🎲 Generate</button>
+        <button class="btn btn-gray" style="font-size:12px;padding:10px" onclick="clearDraw()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-center">
+    <div class="d-head">
+      <h2>🎮 Game Arena</h2>
+      <select id="d-target" onchange="setTargetD()" style="width:auto;padding:6px 10px;font-size:12px">
+        <option value="11">11</option><option value="15">15</option><option value="21" selected>21</option><option value="31">31</option>
+      </select>
+    </div>
+    <div id="d-game-area" style="flex:1;padding:12px;overflow-y:auto"></div>
+  </div>
+
+  <div class="d-panel">
+    <div class="d-head"><h2>📊 Standings</h2></div>
+    <div class="d-body">
+      <div class="d-section">
+        <div class="d-section-title">Current</div>
+        <div id="d-stand"></div>
+      </div>
+      <div class="d-section">
+        <div class="d-section-title">🏆 All-Time</div>
+        <div id="d-all"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAYS -->
+<div class="gmenu" id="gmenu">
+  <h2>⏸️ Paused</h2>
+  <button class="gmenu-btn resume" onclick="closeMenu()">▶️ Resume</button>
+  <button class="gmenu-btn end" onclick="endGame()">❌ End</button>
+  <button class="gmenu-btn save" onclick="pauseGame()">💾 Save & Exit</button>
+</div>
+
+<div class="win" id="win">
+  <div class="win-trophy">🏆</div>
+  <div class="win-tag">🎉 WINNER 🎉</div>
+  <div class="win-name" id="win-name">Player</div>
+  <div class="win-score" id="win-score">21 - 15</div>
+  <div class="win-btns">
+    <button class="win-btn save" id="win-save" onclick="saveGame()">💾 Save</button>
+    <button class="win-btn again" onclick="rematch()">🔄 Again</button>
+    <button class="win-btn exit" onclick="exitWin()">✕ Exit</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="debug"><pre id="dbg"></pre></div>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbzmdLog_tuyJMAE9hCLvfrsVT67LtwvLUOrrESZhUj0pBcbO6eFeajzKocXWfgQ9_MNTA/exec';
+
+const DARTS=[
+  {id:'black-green',name:'Black Green',grad:'linear-gradient(90deg,#1a1a1a,#22c55e,#1a1a1a,#22c55e,#1a1a1a)',color:'#22c55e'},
+  {id:'tropical',name:'Tropical',grad:'linear-gradient(90deg,#f97316,#0891b2,#ec4899,#f97316)',color:'#f97316'},
+  {id:'black-blue',name:'Black Blue',grad:'linear-gradient(90deg,#1a1a1a,#3b82f6,#1a1a1a,#3b82f6)',color:'#3b82f6'},
+  {id:'white-purple',name:'White Purple',grad:'linear-gradient(90deg,#f0f0f0,#a855f7,#f0f0f0,#a855f7)',color:'#a855f7'},
+  {id:'cyan',name:'Cyan',grad:'#06b6d4',color:'#06b6d4'},
+  {id:'white-teal',name:'White Teal',grad:'linear-gradient(90deg,#f0f0f0,#14b8a6,#f0f0f0,#14b8a6)',color:'#14b8a6'},
+  {id:'lime',name:'Lime',grad:'#84cc16',color:'#84cc16'}
+];
+
+const KEY='pd59';let D=load(KEY)||{players:[],draw:[],target:21,paused:null,alltime:[]};
+let G={},liveTimer=null,dbgLog=[];
+
+function load(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
+function save(){localStorage.setItem(KEY,JSON.stringify(D))}
+function log(m){dbgLog.push(new Date().toLocaleTimeString()+': '+m);if(dbgLog.length>30)dbgLog.shift();document.getElementById('dbg').textContent=dbgLog.join('\n');console.log('[PD]',m)}
+function toggleDebug(){document.getElementById('debug').classList.toggle('show')}
+
+// === SYNC ===
+async function sync(){
+  setDot('busy');log('Syncing...');
+  try{
+    // Fetch all data in parallel
+    const[pR,sR,dR,lgR]=await Promise.all([
+      fetch(API+'?action=players').then(r=>r.json()).catch(e=>({success:false,error:e.message})),
+      fetch(API+'?action=stats').then(r=>r.json()).catch(e=>({success:false,error:e.message})),
+      fetch(API+'?action=draw').then(r=>r.json()).catch(e=>({success:false,error:e.message})),
+      fetch(API+'?action=liveGame').then(r=>r.json()).catch(e=>({success:false,error:e.message}))
+    ]);
+    
+    log('Players: '+(pR.success?'OK':'FAIL'));
+    log('Stats: '+(sR.success?'OK':'FAIL'));
+    log('Draw: '+(dR.success?'OK':'FAIL'));
+    log('Live: '+(lgR.success?'OK':'FAIL'));
+    
+    // PLAYERS - Cloud is master
+    if(pR.success&&pR.data?.players){
+      D.players=pR.data.players.filter(p=>p&&p.trim());
+      log('Got '+D.players.length+' players');
+    }
+    
+    // STATS - Update alltime
+    if(sR.success&&sR.data?.stats){
+      sR.data.stats.forEach(c=>{
+        let l=D.alltime.find(x=>x.name===c.name);
+        if(!l){l={name:c.name,gp:0,w:0,l:0,pf:0,pa:0,diff:0,champs:0};D.alltime.push(l)}
+        // Take cloud values if they have more games
+        if((c.gamesPlayed||0)>l.gp){
+          l.gp=c.gamesPlayed||0;l.w=c.wins||0;l.l=c.losses||0;
+          l.pf=c.pointsFor||0;l.pa=c.pointsAgainst||0;l.diff=c.pointsDiff||0;
+          l.champs=c.championships||0;
+        }
+      });
+      log('Got '+D.alltime.length+' stats');
+    }
+    
+    // DRAW - Cloud is master
+    if(dR.success&&dR.data?.games){
+      D.draw=dR.data.games.map(g=>({
+        num:g.gameNum,p1:g.player1,p2:g.player2,
+        s1:g.score1,s2:g.score2,winner:g.winner||null,
+        isGF:g.gameNum==='GF'
+      }));
+      // Add GF if exists
+      if(dR.data.grandFinal&&!D.draw.find(x=>x.isGF)){
+        const gf=dR.data.grandFinal;
+        D.draw.push({num:'GF',p1:gf.player1,p2:gf.player2,s1:gf.score1,s2:gf.score2,winner:gf.winner,isGF:true});
+      }
+      if(dR.data.targetScore)D.target=dR.data.targetScore;
+      log('Got '+D.draw.length+' games');
+    }
+    
+    // LIVE GAME
+    D.live=(lgR.success&&lgR.data?.active)?lgR.data:null;
+    if(D.live)log('Live game: '+D.live.player1+' vs '+D.live.player2);
+    
+    save();setDot('ok');
+    document.getElementById('last-sync').textContent=new Date().toLocaleTimeString();
+    toast('Synced!','ok');render();
+  }catch(e){
+    log('ERROR: '+e.message);setDot('err');toast('Sync failed: '+e.message,'err');
+  }
+}
+
+function setDot(s){
+  ['dot1','dot2','dot3'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='dot'+(s==='busy'?' busy':s==='ok'?' ok':'')});
+  ['txt1','txt2','txt3'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=s==='busy'?'...':s==='ok'?'OK':'Err'});
+}
+
+async function apiPost(action,data){
+  log('POST: '+action);
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action,...data})});
+    const j=await r.json();
+    log('Response: '+(j.success?'OK':'FAIL'));
+    return j;
+  }catch(e){log('POST error: '+e.message);return{success:false}}
+}
+
+async function pushLive(){
+  if(!G.p1)return;
+  await apiPost('updateLiveGame',{
+    active:true,gameId:G.num||'custom',player1:G.p1,player2:G.p2,
+    score1:G.s1,score2:G.s2,color1:G.d1?.id||'',color2:G.d2?.id||'',
+    target:D.target,isChamp:G.isChamp,isGF:G.isGF
+  });
+}
+
+async function clearLive(){await apiPost('clearLiveGame',{});D.live=null}
+
+async function pullLive(){
+  try{
+    const r=await fetch(API+'?action=liveGame');
+    const j=await r.json();
+    if(j.success&&j.data?.active){
+      if(j.data.score1!==G.s1||j.data.score2!==G.s2){
+        G.s1=j.data.score1;G.s2=j.data.score2;updateGame();log('Live update: '+G.s1+'-'+G.s2);
+      }
+    }
+  }catch(e){}
+}
+
+function startLiveSync(){stopLiveSync();liveTimer=setInterval(pullLive,2000);log('Live sync ON')}
+function stopLiveSync(){if(liveTimer){clearInterval(liveTimer);liveTimer=null;log('Live sync OFF')}}
+
+// === NAV ===
+document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>go(b.dataset.s));
+function go(s){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  document.getElementById('screen-'+s)?.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('on',b.dataset.s===s));
+  document.getElementById('nav').style.display=['game','dart','custom'].includes(s)?'none':'flex';
+  if(s==='home')render();
+  if(s==='settings'){document.getElementById('sel-target').value=D.target;renderPlayers()}
+}
+
+function switchTab(t,btn){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  ['draw','stand','all'].forEach(x=>document.getElementById('tab-'+x).style.display=x===t?'block':'none');
+}
+
+// === RENDER ===
+function render(){
+  const st=calcStand();
+  const done=D.draw.filter(g=>!g.isGF&&g.winner).length;
+  const total=D.draw.filter(g=>!g.isGF).length;
+  
+  document.getElementById('s-players').textContent=D.players.length;
+  document.getElementById('s-games').textContent=total?done+'/'+total:'0';
+  document.getElementById('s-target').textContent=D.target;
+  
+  renderLive();renderPaused();renderHero();renderDraw();renderStand(st);renderAll();
+  if(window.innerWidth>=1024)renderDesktop(st);
+}
+
+function renderLive(){
+  const el=document.getElementById('live-zone');
+  if(!D.live||!D.live.active){el.innerHTML='';return}
+  const L=D.live;
+  el.innerHTML=`<div class="live-banner" onclick="joinLive()">
+    <div class="live-top"><div class="live-badge"><span class="live-pulse"></span>LIVE</div><button class="live-join">Join</button></div>
+    <div class="live-players">${L.player1} vs ${L.player2}</div>
+    <div class="live-score">${L.score1} - ${L.score2}</div>
+  </div>`;
+}
+
+function renderPaused(){
+  const el=document.getElementById('paused-zone');
+  if(!D.paused){el.innerHTML='';return}
+  const P=D.paused;
+  el.innerHTML=`<div class="paused-banner" onclick="resumePaused()">
+    <div class="paused-info"><div class="label">⏸ PAUSED</div><div class="players">${P.p1} vs ${P.p2}</div><div class="score">${P.s1} - ${P.s2}</div></div>
+    <button class="paused-btn">Resume</button>
+  </div>`;
+}
+
+function renderHero(){
+  const el=document.getElementById('hero-zone');
+  const n=getNext();
+  if(!D.draw.length){el.innerHTML='<div class="hero"><div class="hero-tag" style="color:var(--muted)">NO CHAMPIONSHIP</div><div class="hero-match">'+(D.players.length<2?'Add players first':'Tap Draw to start')+'</div></div>';return}
+  if(!n){el.innerHTML='<div class="hero"><div class="hero-tag">🎉 COMPLETE</div><div class="hero-match">All games done!</div></div>';return}
+  const g=n.game;
+  el.innerHTML=`<div class="hero ${g.isGF?'gf':''}">
+    <div class="hero-tag">${g.isGF?'🏆 GRAND FINAL 🏆':'GAME '+g.num}</div>
+    <div class="hero-match">${g.p1}<span class="hero-vs">vs</span>${g.p2}</div>
+    <button class="hero-btn" onclick="playNext()">▶️ Play</button>
+  </div>`;
+}
+
+function renderDraw(){
+  const el=document.getElementById('tab-draw');
+  if(!D.draw.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>No games</div>';return}
+  el.innerHTML=D.draw.map((g,i)=>`<div class="draw-row ${g.winner?'done':''} ${g.isGF?'gf':''}" onclick="${g.winner?'':'playIdx('+i+')'}">
+    <div class="draw-num">${g.isGF?'🏆':g.num}</div>
+    <div class="draw-players"><span class="${g.winner===g.p1?'win':''}">${g.p1}</span> vs <span class="${g.winner===g.p2?'win':''}">${g.p2}</span></div>
+    <div class="draw-result">${g.winner?g.s1+'-'+g.s2:'—'}</div>
+    ${g.winner?`<button class="draw-undo" onclick="event.stopPropagation();undoGame(${i})">↩</button>`:''}
+  </div>`).join('');
+}
+
+function renderStand(st){
+  const el=document.getElementById('tab-stand');
+  if(!st.length){el.innerHTML='<div class="empty"><div class="empty-icon">📊</div>No standings</div>';return}
+  el.innerHTML=`<table class="tbl"><thead><tr><th>Player</th><th>W</th><th>L</th><th>+/-</th></tr></thead><tbody>${st.map((p,i)=>`<tr class="${i===0?'top':''}"><td>${i===0?'👑 ':''}${p.name}</td><td>${p.w}</td><td>${p.l}</td><td class="${p.diff>0?'plus':p.diff<0?'minus':''}">${p.diff>0?'+':''}${p.diff}</td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderAll(){
+  const el=document.getElementById('tab-all');
+  const sorted=[...D.alltime].sort((a,b)=>(b.champs||0)-(a.champs||0)||b.w-a.w);
+  if(!sorted.length){el.innerHTML='<div class="empty"><div class="empty-icon">🏆</div>No stats</div>';return}
+  el.innerHTML=`<table class="tbl"><thead><tr><th>Player</th><th>GP</th><th>W</th><th>%</th><th>🏆</th></tr></thead><tbody>${sorted.map(s=>`<tr><td>${s.name}</td><td>${s.gp}</td><td>${s.w}</td><td>${s.gp?Math.round(s.w/s.gp*100):0}%</td><td style="color:${s.champs?'#ffd700':'var(--muted)'}">${s.champs||0}</td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderDesktop(st){
+  // Players
+  document.getElementById('d-player-list').innerHTML=D.players.length?D.players.map(p=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:11px">${p}</div>`).join(''):'<div style="color:var(--muted);font-size:11px">No players</div>';
+  
+  // Draw
+  document.getElementById('d-draw').innerHTML=D.draw.length?D.draw.map((g,i)=>`<div class="d-draw-row ${g.winner?'done':''} ${g.isGF?'gf':''}" onclick="${g.winner?'':'playIdx('+i+')'}">
+    <div class="d-draw-num">${g.isGF?'🏆':g.num}</div>
+    <div class="d-draw-players">${g.p1} vs ${g.p2}</div>
+    <div class="d-draw-score">${g.winner?g.s1+'-'+g.s2:'—'}</div>
+  </div>`).join(''):'<div style="color:var(--muted);font-size:11px">No draw</div>';
+  
+  // Standings
+  document.getElementById('d-stand').innerHTML=st.length?`<table class="tbl" style="font-size:10px"><thead><tr><th>Player</th><th>W</th><th>L</th></tr></thead><tbody>${st.map((p,i)=>`<tr class="${i===0?'top':''}"><td>${p.name}</td><td>${p.w}</td><td>${p.l}</td></tr>`).join('')}</tbody></table>`:'<div style="color:var(--muted);font-size:11px">No standings</div>';
+  
+  // All-time
+  const sorted=[...D.alltime].sort((a,b)=>(b.champs||0)-(a.champs||0)||b.w-a.w);
+  document.getElementById('d-all').innerHTML=sorted.length?`<table class="tbl" style="font-size:10px"><thead><tr><th>Player</th><th>W</th><th>🏆</th></tr></thead><tbody>${sorted.map(s=>`<tr><td>${s.name}</td><td>${s.w}</td><td style="color:${s.champs?'#ffd700':'var(--muted)'}">${s.champs||0}</td></tr>`).join('')}</tbody></table>`:'<div style="color:var(--muted);font-size:11px">No stats</div>';
+  
+  // Game area
+  renderDesktopGame();
+}
+
+function renderDesktopGame(){
+  const el=document.getElementById('d-game-area');
+  
+  // Live game
+  if(D.live&&D.live.active){
+    el.innerHTML=`<div class="live-banner" onclick="joinLive()" style="margin-bottom:14px">
+      <div class="live-top"><div class="live-badge"><span class="live-pulse"></span>LIVE</div><button class="live-join">Join</button></div>
+      <div class="live-players">${D.live.player1} vs ${D.live.player2}</div>
+      <div class="live-score">${D.live.score1} - ${D.live.score2}</div>
+    </div>`;
+    return;
+  }
+  
+  // Hero
+  const n=getNext();
+  const done=D.draw.filter(g=>!g.isGF&&g.winner).length;
+  const total=D.draw.filter(g=>!g.isGF).length;
+  
+  let hero='';
+  if(!D.draw.length){
+    hero=`<div class="hero" style="margin-bottom:14px"><div class="hero-tag" style="color:var(--muted)">NO CHAMPIONSHIP</div><div class="hero-match">${D.players.length<2?'Add players':'Click Generate'}</div></div>`;
+  }else if(!n){
+    hero=`<div class="hero" style="margin-bottom:14px"><div class="hero-tag">🎉 COMPLETE</div><div class="hero-match">All games done!</div></div>`;
+  }else{
+    const g=n.game;
+    hero=`<div class="hero ${g.isGF?'gf':''}" style="margin-bottom:14px">
+      <div class="hero-tag">${g.isGF?'🏆 GRAND FINAL 🏆':'GAME '+g.num}</div>
+      <div class="hero-match">${g.p1}<span class="hero-vs">vs</span>${g.p2}</div>
+      <button class="hero-btn" onclick="playNext()" style="font-size:13px;padding:10px 24px">▶️ Play</button>
+    </div>`;
+  }
+  
+  el.innerHTML=`
+    <div class="stats" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+      <div class="stat"><div class="stat-val" style="font-size:18px">${D.players.length}</div><div class="stat-name">Players</div></div>
+      <div class="stat"><div class="stat-val" style="font-size:18px">${done}/${total}</div><div class="stat-name">Games</div></div>
+      <div class="stat"><div class="stat-val" style="font-size:18px">${D.target}</div><div class="stat-name">Target</div></div>
+      <div class="stat"><div class="stat-val" style="font-size:18px">${D.draw.filter(g=>!g.winner).length}</div><div class="stat-name">Left</div></div>
+    </div>
+    ${hero}
+  `;
+}
+
+function calcStand(){
+  const m=new Map();
+  D.players.forEach(p=>m.set(p,{name:p,w:0,l:0,pf:0,pa:0,diff:0}));
+  D.draw.forEach(g=>{
+    if(!g.winner)return;
+    const a=m.get(g.p1),b=m.get(g.p2);
+    if(a){if(g.winner===g.p1)a.w++;else a.l++;a.pf+=g.s1||0;a.pa+=g.s2||0;a.diff+=(g.s1||0)-(g.s2||0)}
+    if(b){if(g.winner===g.p2)b.w++;else b.l++;b.pf+=g.s2||0;b.pa+=g.s1||0;b.diff+=(g.s2||0)-(g.s1||0)}
+  });
+  return[...m.values()].sort((a,b)=>b.w-a.w||b.diff-a.diff);
+}
+
+function getNext(){
+  for(let i=0;i<D.draw.length;i++)if(!D.draw[i].isGF&&!D.draw[i].winner)return{idx:i,game:D.draw[i]};
+  for(let i=0;i<D.draw.length;i++)if(D.draw[i].isGF&&!D.draw[i].winner)return{idx:i,game:D.draw[i]};
+  return null;
+}
+
+// === UNDO ===
+function undoGame(i){
+  const g=D.draw[i];if(!g||!g.winner)return;
+  if(!confirm('Undo '+g.p1+' vs '+g.p2+'?'))return;
+  
+  // Revert alltime
+  [g.p1,g.p2].forEach(name=>{
+    const at=D.alltime.find(x=>x.name===name);
+    if(at){
+      at.gp=Math.max(0,at.gp-1);
+      const won=g.winner===name;
+      at.w=Math.max(0,at.w-(won?1:0));
+      at.l=Math.max(0,at.l-(won?0:1));
+      const isP1=name===g.p1;
+      at.pf-=isP1?g.s1:g.s2;
+      at.pa-=isP1?g.s2:g.s1;
+      at.diff=at.pf-at.pa;
+    }
+  });
+  
+  g.winner=null;g.s1=null;g.s2=null;
+  save();toast('Undone','ok');render();
+}
+
+// === CUSTOM ===
+function openCustom(){
+  if(D.players.length<2){toast('Add 2+ players','err');return}
+  const opts=D.players.map(p=>`<option value="${p}">${p}</option>`).join('');
+  document.getElementById('sel-p1').innerHTML=opts;
+  document.getElementById('sel-p2').innerHTML=opts;
+  if(D.players.length>1)document.getElementById('sel-p2').selectedIndex=1;
+  go('custom');
+}
+
+function startCustom(){
+  const p1=document.getElementById('sel-p1').value;
+  const p2=document.getElementById('sel-p2').value;
+  if(p1===p2){toast('Pick different players','err');return}
+  G={p1,p2,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false};
+  openDart(1,p1);
+}
+
+// === DART ===
+function openDart(step,name){
+  G.step=step;G.pick=null;
+  document.getElementById('dart-step').textContent='STEP '+step+' OF 2';
+  document.getElementById('dart-player').textContent=name;
+  document.getElementById('dart-confirm').disabled=true;
+  document.getElementById('dart-grid').innerHTML=DARTS.map(d=>{
+    const off=step===2&&G.d1&&G.d1.id===d.id;
+    return`<div class="dart-opt ${off?'off':''}" data-id="${d.id}" onclick="pickDart('${d.id}')">
+      <div class="dart-shape" style="background:${d.grad}"></div>
+      <div class="dart-label">${d.name}</div>
+    </div>`;
+  }).join('');
+  go('dart');
+}
+
+function pickDart(id){
+  G.pick=DARTS.find(x=>x.id===id);
+  document.querySelectorAll('.dart-opt').forEach(el=>el.classList.toggle('picked',el.dataset.id===id));
+  document.getElementById('dart-confirm').disabled=false;
+}
+
+function confirmDart(){
+  if(!G.pick)return;
+  if(G.step===1){G.d1=G.pick;openDart(2,G.p2)}
+  else{G.d2=G.pick;beginGame()}
+}
+
+// === GAMEPLAY ===
+function playNext(){
+  const n=getNext();
+  if(!n){toast(D.draw.length?'All done!':'Generate draw first','err');return}
+  playIdx(n.idx);
+}
+
+function playIdx(i){
+  const g=D.draw[i];if(!g||g.winner)return;
+  G={p1:g.p1,p2:g.p2,s1:0,s2:0,d1:null,d2:null,idx:i,num:g.num,isChamp:true,isGF:g.isGF};
+  openDart(1,g.p1);
+}
+
+function joinLive(){
+  if(!D.live||!D.live.active)return;
+  const L=D.live;
+  G={p1:L.player1,p2:L.player2,s1:L.score1,s2:L.score2,
+    d1:DARTS.find(x=>x.id===L.color1)||DARTS[0],
+    d2:DARTS.find(x=>x.id===L.color2)||DARTS[1],
+    idx:-1,num:L.gameId,isChamp:L.isChamp,isGF:L.isGF};
+  setupGame();startLiveSync();go('game');
+}
+
+function beginGame(){
+  G.s1=0;G.s2=0;
+  setupGame();
+  if(G.isChamp){pushLive();startLiveSync();document.getElementById('g-live').style.display='flex'}
+  else{document.getElementById('g-live').style.display='none'}
+  go('game');
+}
+
+function setupGame(){
+  document.getElementById('name1').textContent=G.p1;
+  document.getElementById('name2').textContent=G.p2;
+  document.getElementById('dart1').style.background=G.d1.grad;
+  document.getElementById('dart2').style.background=G.d2.grad;
+  document.getElementById('g-target').textContent=D.target;
+  
+  const lbl=document.getElementById('g-label');
+  if(G.isGF){lbl.textContent='🏆 GRAND FINAL';lbl.className='badge gf'}
+  else if(G.isChamp){lbl.textContent='Game '+G.num;lbl.className='badge'}
+  else{lbl.textContent='Quick Match';lbl.className='badge'}
+  
+  updateGame();
+}
+
+function adj(p,amt){
+  if(p===1){
+    G.s1=Math.max(0,G.s1+amt);
+    if(G.s1>=D.target){G.s1=D.target;updateGame();win(G.p1);return}
+  }else{
+    G.s2=Math.max(0,G.s2+amt);
+    if(G.s2>=D.target){G.s2=D.target;updateGame();win(G.p2);return}
+  }
+  updateGame();
+  if(G.isChamp)pushLive();
+}
+
+function updateGame(){
+  document.getElementById('sc1').textContent=G.s1;
+  document.getElementById('sc2').textContent=G.s2;
+  
+  const p1=Math.min(100,(G.s1/D.target)*100);
+  const p2=Math.min(100,(G.s2/D.target)*100);
+  
+  document.getElementById('bar1').style.width=p1+'%';
+  document.getElementById('bar1').style.background=G.d1.grad;
+  document.getElementById('bar2').style.width=p2+'%';
+  document.getElementById('bar2').style.background=G.d2.grad;
+}
+
+function resetScores(){
+  if(!confirm('Reset to 0-0?'))return;
+  G.s1=0;G.s2=0;updateGame();
+  if(G.isChamp)pushLive();
+}
+
+// === MENU ===
+function openMenu(){document.getElementById('gmenu').classList.add('on')}
+function closeMenu(){document.getElementById('gmenu').classList.remove('on')}
+
+function endGame(){
+  if(!confirm('End without saving?'))return;
+  closeMenu();stopLiveSync();clearLive();
+  D.paused=null;save();go('home');toast('Ended','ok');
+}
+
+function pauseGame(){
+  closeMenu();stopLiveSync();
+  D.paused={p1:G.p1,p2:G.p2,s1:G.s1,s2:G.s2,d1:G.d1,d2:G.d2,idx:G.idx,num:G.num,isChamp:G.isChamp,isGF:G.isGF};
+  save();toast('Saved','ok');go('home');
+}
+
+function resumePaused(){
+  if(!D.paused)return;
+  const P=D.paused;
+  G={p1:P.p1,p2:P.p2,s1:P.s1,s2:P.s2,d1:P.d1,d2:P.d2,idx:P.idx,num:P.num,isChamp:P.isChamp,isGF:P.isGF};
+  D.paused=null;save();
+  setupGame();
+  if(G.isChamp){pushLive();startLiveSync();document.getElementById('g-live').style.display='flex'}
+  go('game');
+}
+
+// === WIN ===
+function win(name){
+  stopLiveSync();
+  document.getElementById('win-name').textContent=name;
+  document.getElementById('win-score').textContent=G.s1+' - '+G.s2;
+  document.getElementById('win-save').style.display=G.isChamp?'inline-block':'none';
+  document.getElementById('win').classList.add('on');
+  confetti();
+}
+
+async function saveGame(){
+  const winner=G.s1>=D.target?G.p1:G.p2;
+  
+  if(G.isChamp&&G.idx>=0){
+    const g=D.draw[G.idx];
+    g.winner=winner;g.s1=G.s1;g.s2=G.s2;
+    
+    // Update alltime (including GF!)
+    [G.p1,G.p2].forEach(name=>{
+      let at=D.alltime.find(x=>x.name===name);
+      if(!at){at={name,gp:0,w:0,l:0,pf:0,pa:0,diff:0,champs:0};D.alltime.push(at)}
+      at.gp++;
+    });
+    const a1=D.alltime.find(x=>x.name===G.p1);
+    const a2=D.alltime.find(x=>x.name===G.p2);
+    if(a1){if(winner===G.p1)a1.w++;else a1.l++;a1.pf+=G.s1;a1.pa+=G.s2;a1.diff=a1.pf-a1.pa}
+    if(a2){if(winner===G.p2)a2.w++;else a2.l++;a2.pf+=G.s2;a2.pa+=G.s1;a2.diff=a2.pf-a2.pa}
+    
+    // Push to cloud
+    await apiPost('submitGame',{gameId:g.num,player1:g.p1,player2:g.p2,score1:g.s1,score2:g.s2});
+    
+    if(G.isGF){
+      const at=D.alltime.find(x=>x.name===winner);
+      if(at)at.champs=(at.champs||0)+1;
+      toast('🏆 Champion!','ok');
+    }else{
+      checkGF();
+      toast('Saved!','ok');
+    }
+  }
+  
+  clearLive();D.paused=null;save();exitWin();
+}
+
+function checkGF(){
+  const reg=D.draw.filter(g=>!g.isGF);
+  const left=reg.filter(g=>!g.winner);
+  if(left.length===0&&!D.draw.find(g=>g.isGF)&&reg.length>0){
+    const st=calcStand();
+    if(st.length>=2){
+      D.draw.push({num:'GF',p1:st[0].name,p2:st[1].name,s1:null,s2:null,winner:null,isGF:true});
+      save();toast('🏆 Grand Final!','ok');
+    }
+  }
+}
+
+function rematch(){
+  document.getElementById('win').classList.remove('on');
+  G.s1=0;G.s2=0;updateGame();
+  if(G.isChamp){pushLive();startLiveSync()}
+}
+
+function exitWin(){document.getElementById('win').classList.remove('on');go('home')}
+
+function confetti(){
+  const cols=[G.d1?.color||'#ffd700',G.d2?.color||'#3b82f6','#22c55e','#ff4757'];
+  for(let i=0;i<40;i++){
+    setTimeout(()=>{
+      const c=document.createElement('div');
+      c.className='confetti';
+      c.style.left=Math.random()*100+'vw';
+      c.style.background=cols[Math.floor(Math.random()*cols.length)];
+      c.style.animationDuration=(2+Math.random()*2)+'s';
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),4000);
+    },i*25);
+  }
+}
+
+// === SETTINGS ===
+function renderPlayers(){
+  const el=document.getElementById('player-list');
+  if(!D.players.length){el.innerHTML='<div style="color:var(--muted);padding:12px;font-size:11px;text-align:center">No players</div>';return}
+  el.innerHTML=D.players.map((p,i)=>{
+    const at=D.alltime.find(x=>x.name===p)||{gp:0,w:0,champs:0};
+    return`<div class="player-row">
+      <div class="player-avatar">${p[0].toUpperCase()}</div>
+      <div class="player-info"><div class="name">${at.champs?'🏆 ':''}${p}</div><div class="meta">${at.gp} GP • ${at.w} W</div></div>
+      <button class="player-del" onclick="delPlayer(${i})">×</button>
+    </div>`;
+  }).join('');
+}
+
+async function addPlayer(){
+  const inp=document.getElementById('inp-player');
+  const name=inp.value.trim();if(!name)return;
+  if(D.players.some(p=>p.toLowerCase()===name.toLowerCase())){toast('Exists!','err');return}
+  D.players.push(name);save();
+  await apiPost('addPlayer',{playerName:name});
+  inp.value='';renderPlayers();render();toast('Added!','ok');
+}
+
+async function addPlayerD(){
+  const inp=document.getElementById('d-inp-player');
+  const name=inp.value.trim();if(!name)return;
+  if(D.players.some(p=>p.toLowerCase()===name.toLowerCase())){toast('Exists!','err');return}
+  D.players.push(name);save();
+  await apiPost('addPlayer',{playerName:name});
+  inp.value='';render();toast('Added!','ok');
+}
+
+function delPlayer(i){
+  if(!confirm('Remove '+D.players[i]+'?'))return;
+  D.players.splice(i,1);save();renderPlayers();render();
+}
+
+document.getElementById('inp-player').addEventListener('keypress',e=>{if(e.key==='Enter')addPlayer()});
+document.getElementById('d-inp-player')?.addEventListener('keypress',e=>{if(e.key==='Enter')addPlayerD()});
+
+async function genDraw(){
+  if(D.players.length<2){toast('Need 2+ players','err');return}
+  if(D.draw.length&&!confirm('Replace draw?'))return;
+  
+  const pairs=[];
+  for(let i=0;i<D.players.length;i++)for(let j=i+1;j<D.players.length;j++)pairs.push([D.players[i],D.players[j]]);
+  for(let i=pairs.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pairs[i],pairs[j]]=[pairs[j],pairs[i]]}
+  
+  D.draw=pairs.map((p,i)=>({num:i+1,p1:p[0],p2:p[1],s1:null,s2:null,winner:null,isGF:false}));
+  D.paused=null;save();
+  
+  await apiPost('generateDraw',{});
+  toast(pairs.length+' games!','ok');render();go('home');
+}
+
+async function clearDraw(){
+  if(!confirm('Clear draw?'))return;
+  D.draw=[];D.paused=null;save();
+  await apiPost('newEvent',{});
+  toast('Cleared','ok');render();
+}
+
+function setTarget(){
+  D.target=parseInt(document.getElementById('sel-target').value)||21;
+  save();render();toast('Target: '+D.target,'ok');
+}
+
+function setTargetD(){
+  D.target=parseInt(document.getElementById('d-target').value)||21;
+  document.getElementById('sel-target').value=D.target;
+  save();render();toast('Target: '+D.target,'ok');
+}
+
+// === TOAST ===
+function toast(m,t='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=m;el.className='toast show '+t;
+  setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+// === PWA ===
+if('serviceWorker'in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').then(()=>log('SW OK')).catch(e=>log('SW err: '+e.message));
+  });
+}
+
+// === INIT ===
+window.addEventListener('resize',()=>render());
+setInterval(()=>{if(document.getElementById('screen-home')?.classList.contains('active')||window.innerWidth>=1024)sync()},20000);
+
+render();
+sync();
+log('PopDarts v5.9 ready');
+</script>
+</body>
+</html>
