@@ -1,4 +1,4 @@
-const CACHE_NAME = 'popdarts-v7.3';
+const CACHE_NAME = 'popdarts-v7.4-live';
 const URLS_TO_CACHE = [
   './',
   './index.html',
@@ -8,7 +8,7 @@ const URLS_TO_CACHE = [
 ];
 
 self.addEventListener('install', event => {
-  self.skipWaiting();
+  self.skipWaiting(); // Force update immediately
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(URLS_TO_CACHE))
   );
@@ -25,11 +25,12 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // CRITICAL: Never cache the Google Script API
+  // RULE 1: LIVE DATA - Never cache the Google Script API
   if (event.request.url.includes('script.google.com')) {
-    return; // Let the network handle it
+    return; // Go directly to network
   }
 
+  // RULE 2: APP FILES - Cache First, then Network
   event.respondWith(
     caches.match(event.request).then(response => {
       return response || fetch(event.request);
