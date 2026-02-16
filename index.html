@@ -36,7 +36,8 @@
     .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
     .card-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px}
     
-    .live-card{background:linear-gradient(135deg,#0a2818,#041810);border:2px solid var(--green);border-radius:16px;padding:16px;margin-bottom:14px;cursor:pointer}
+    .live-card{background:linear-gradient(135deg,#0a2818,#041810);border:2px solid var(--green);border-radius:16px;padding:16px;margin-bottom:14px;cursor:pointer;animation:fadeIn 0.5s}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
     .live-badge{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:var(--green);margin-bottom:8px}
     .live-pulse{width:10px;height:10px;background:var(--green);border-radius:50%;animation:livePulse 1s infinite}
     @keyframes livePulse{50%{transform:scale(1.3);opacity:.6}}
@@ -467,7 +468,7 @@
 
 <script>
 // ============================================================================
-// POPDARTS v7.3 - INSTANT START & SERVICE WORKER
+// POPDARTS v7.4 - INSTANT START, CASE-INSENSITIVE LIVE SYNC
 // ============================================================================
 
 const API = 'https://script.google.com/macros/s/AKfycbzmdLog_tuyJMAE9hCLvfrsVT67LtwvLUOrrESZhUj0pBcbO6eFeajzKocXWfgQ9_MNTA/exec';
@@ -514,7 +515,30 @@ async function sync() {
       if (drawRes.data.grandFinal && !CLOUD.draw.find(g => g.isGF)) { const gf = drawRes.data.grandFinal; CLOUD.draw.push({num:'GF',p1:gf.player1,p2:gf.player2,s1:gf.score1,s2:gf.score2,winner:gf.winner,isGF:true}); }
       if (drawRes.data.targetScore) CLOUD.target = drawRes.data.targetScore;
     }
-    if (liveRes.success && liveRes.data) CLOUD.live = liveRes.data.active ? liveRes.data : null;
+    
+    // Process live result safely here too
+    if (liveRes.success && liveRes.data) {
+       // Manual normalization in case sync() is called directly
+       const raw = liveRes.data;
+       if (raw.active || raw.Active) {
+         CLOUD.live = {
+            active: true,
+            gameId: raw.gameId || raw.GameId,
+            player1: raw.player1 || raw.Player1,
+            player2: raw.player2 || raw.Player2,
+            score1: parseInt(raw.score1 || raw.Score1 || 0),
+            score2: parseInt(raw.score2 || raw.Score2 || 0),
+            color1: raw.color1 || raw.Color1,
+            color2: raw.color2 || raw.Color2,
+            target: parseInt(raw.target || raw.Target || 21),
+            isChamp: raw.isChamp || raw.IsChamp === 'true' || raw.IsChamp === true,
+            isGF: raw.isGF || raw.IsGF === 'true' || raw.IsGF === true
+         };
+       } else {
+         CLOUD.live = null;
+       }
+    }
+
     setDot('ok');
     document.getElementById('last-sync').textContent = new Date().toLocaleTimeString();
     render();
@@ -547,17 +571,39 @@ async function pullLive() {
   try {
     const r = await fetch(API + '?action=liveGame');
     const j = await r.json();
-    if (j.success && j.data && j.data.active) {
-      CLOUD.live = j.data;
-      if (GAME.p1 && j.data.player1 === GAME.p1 && j.data.player2 === GAME.p2) {
-        if (j.data.score1 !== GAME.s1 || j.data.score2 !== GAME.s2) {
-          GAME.s1 = j.data.score1; GAME.s2 = j.data.score2; updateGameUI();
+    
+    // NORMALIZE KEYS TO LOWERCASE
+    if (j.success && j.data && (j.data.active || j.data.Active)) {
+      const raw = j.data;
+      const cleanData = {
+        active: raw.active || raw.Active === 'true' || raw.Active === true,
+        gameId: raw.gameId || raw.GameId,
+        player1: raw.player1 || raw.Player1,
+        player2: raw.player2 || raw.Player2,
+        score1: parseInt(raw.score1 || raw.Score1 || 0),
+        score2: parseInt(raw.score2 || raw.Score2 || 0),
+        color1: raw.color1 || raw.Color1,
+        color2: raw.color2 || raw.Color2,
+        target: parseInt(raw.target || raw.Target || 21),
+        isChamp: raw.isChamp || raw.IsChamp === 'true' || raw.IsChamp === true,
+        isGF: raw.isGF || raw.IsGF === 'true' || raw.IsGF === true
+      };
+
+      CLOUD.live = cleanData;
+      
+      // Update local game if matching
+      if (GAME.p1 && cleanData.player1 === GAME.p1 && cleanData.player2 === GAME.p2) {
+        if (cleanData.score1 !== GAME.s1 || cleanData.score2 !== GAME.s2) {
+          GAME.s1 = cleanData.score1; GAME.s2 = cleanData.score2; updateGameUI();
           if (GAME.s1 >= CLOUD.target) { win(GAME.p1); return; }
           if (GAME.s2 >= CLOUD.target) { win(GAME.p2); return; }
         }
       }
       render();
-    } else { CLOUD.live = null; }
+    } else { 
+      CLOUD.live = null; 
+      render();
+    }
   } catch(e) { }
 }
 
@@ -726,12 +772,22 @@ function pickDart(id) {
 
 function confirmDart() {
   if (!GAME.pick) return;
-  if (GAME.step === 1) { GAME.d1 = GAME.pick; openDart(2, GAME.p2); }
-  else { 
+  if (GAME.step === 1) { 
+    GAME.d1 = GAME.pick; 
+    openDart(2, GAME.p2); 
+  } else { 
+    // INSTANT START: Don't wait for server
     GAME.d2 = GAME.pick; 
-    go('game'); setupGameUI();
-    if (GAME.isChamp) { pushLive().catch(e=>{}); startLiveSync(); document.getElementById('g-live').style.display = 'flex'; } 
-    else document.getElementById('g-live').style.display = 'none';
+    go('game'); 
+    setupGameUI();
+    if (GAME.isChamp) { 
+      // Send to server in background
+      pushLive().catch(e=>{}); 
+      startLiveSync(); 
+      document.getElementById('g-live').style.display = 'flex'; 
+    } else {
+      document.getElementById('g-live').style.display = 'none';
+    }
   }
 }
 
@@ -789,8 +845,15 @@ function joinLiveDesktop() {
 
 function beginGame(isDesktop) {
   GAME.s1 = 0; GAME.s2 = 0; desktopPlaying = isDesktop;
-  if (!isDesktop) { go('game'); setupGameUI(); if (GAME.isChamp) { pushLive().catch(e=>{}); startLiveSync(); document.getElementById('g-live').style.display = 'flex'; } else document.getElementById('g-live').style.display = 'none'; }
-  else { if (GAME.isChamp) { pushLive().catch(e=>{}); startLiveSync(); } render(); }
+  if (!isDesktop) { 
+    go('game'); setupGameUI(); 
+    if (GAME.isChamp) { pushLive().catch(e=>{}); startLiveSync(); document.getElementById('g-live').style.display = 'flex'; } 
+    else document.getElementById('g-live').style.display = 'none'; 
+  }
+  else { 
+    if (GAME.isChamp) { pushLive().catch(e=>{}); startLiveSync(); } 
+    render(); 
+  }
 }
 
 function resumePaused() {
@@ -917,7 +980,7 @@ window.addEventListener('resize', () => render());
 setInterval(() => { const homeEl = document.getElementById('screen-home'); if ((homeEl && homeEl.classList.contains('active')) || window.innerWidth >= 1024) sync(); }, 12000);
 startLiveSync();
 render(); sync();
-console.log('[POPDARTS] v7.3 Ready!');
+console.log('[POPDARTS] v7.4 Ready!');
 </script>
 </body>
 </html>
