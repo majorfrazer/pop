@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0a0a12">
+  <title>PopDarts</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+    :root{--bg:#0a0a12;--card:#12121f;--elev:#1a1a2e;--border:rgba(255,255,255,.1);--text:#fff;--dim:#9898b0;--muted:#55556a;--gold:#ffc107;--gold2:#ff9800;--green:#00e676;--red:#ff5252;--blue:#448aff;--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
+    html,body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100%;overflow:hidden}
+    .screen{position:fixed;inset:0;display:none;flex-direction:column;background:var(--bg);z-index:10}
+    .screen.active{display:flex}
+    .hdr{display:flex;align-items:center;justify-content:space-between;padding:calc(12px + var(--st)) 16px 12px;border-bottom:1px solid var(--border)}
+    .logo{font-size:20px;font-weight:900;color:var(--gold)}
+    .conn{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:600}
+    .conn-dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+    .conn-dot.on{background:var(--green)}
+    .content{flex:1;overflow-y:auto;padding:14px;padding-bottom:calc(90px + var(--sb))}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
+    .card-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px}
+    .live-card{background:linear-gradient(135deg,#0a2818,#041810);border:3px solid var(--green);border-radius:18px;padding:20px;margin-bottom:14px;cursor:pointer}
+    .live-badge{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--green);margin-bottom:10px}
+    .live-pulse{width:12px;height:12px;background:var(--green);border-radius:50%;animation:pulse 1s infinite}
+    @keyframes pulse{50%{transform:scale(1.4);opacity:.5}}
+    .live-players{font-size:18px;font-weight:700;margin-bottom:6px}
+    .live-score{font-size:48px;font-weight:900;color:var(--gold)}
+    .live-tap{font-size:12px;color:var(--green);margin-top:10px}
+    .hero{background:linear-gradient(135deg,#15152a,#1f1f40);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:14px;text-align:center}
+    .hero.gf{border:2px solid var(--gold)}
+    .hero-tag{font-size:12px;font-weight:800;letter-spacing:2px;color:var(--gold);margin-bottom:8px}
+    .hero-match{font-size:22px;font-weight:800}
+    .hero-vs{display:block;font-size:13px;color:var(--muted);margin:6px 0}
+    .hero-btn{margin-top:16px;padding:14px 36px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:17px;font-weight:800;border:none;border-radius:25px;cursor:pointer}
+    .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+    .act{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 8px;text-align:center;cursor:pointer}
+    .act.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));border:none}
+    .act-icon{font-size:26px;margin-bottom:4px}
+    .act-text{font-size:11px;font-weight:700}
+    .act.gold .act-text{color:#000}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+    .stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 6px;text-align:center}
+    .stat-val{font-size:22px;font-weight:900;color:var(--gold)}
+    .stat-name{font-size:9px;font-weight:600;text-transform:uppercase;color:var(--muted);margin-top:2px}
+    .tabs{display:flex;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:12px}
+    .tab{flex:1;padding:10px 4px;text-align:center;font-size:11px;font-weight:700;color:var(--muted);background:none;border:none;border-radius:8px;cursor:pointer}
+    .tab.on{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000}
+    .tbl{width:100%;border-collapse:collapse;font-size:11px}
+    .tbl th{padding:8px 4px;text-align:center;font-size:8px;font-weight:700;text-transform:uppercase;color:var(--muted);background:rgba(255,255,255,.02)}
+    .tbl th:first-child{text-align:left;padding-left:10px}
+    .tbl td{padding:10px 4px;text-align:center;border-bottom:1px solid var(--border)}
+    .tbl td:first-child{text-align:left;padding-left:10px;font-weight:600}
+    .tbl .top td{background:rgba(255,193,7,.1)}
+    .champ{color:var(--gold);font-weight:800}
+    .plus{color:var(--green)}.minus{color:var(--red)}
+    .draw-row{display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;cursor:pointer}
+    .draw-row.done{opacity:.5}
+    .draw-row.gf{border:2px solid var(--gold)}
+    .draw-num{width:34px;height:34px;background:var(--elev);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+    .draw-row.done .draw-num{background:var(--green);color:#000}
+    .draw-players{flex:1;font-size:14px;font-weight:600}
+    .draw-result{font-size:15px;font-weight:800;color:var(--gold)}
+    .btn{width:100%;padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
+    .btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000}
+    .btn-gray{background:var(--elev);color:var(--text);border:1px solid var(--border)}
+    .btn-red{background:rgba(255,82,82,.15);color:var(--red)}
+    .btn-green{background:var(--green);color:#000}
+    .btn-blue{background:var(--blue);color:#fff}
+    .nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,18,.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:10px 16px calc(10px + var(--sb));z-index:100}
+    .nav-btn{flex:1;padding:8px 0;text-align:center;font-size:10px;font-weight:600;color:var(--muted);background:none;border:none;border-radius:10px;cursor:pointer}
+    .nav-btn.on{color:var(--gold);background:rgba(255,193,7,.1)}
+    .nav-icon{font-size:20px;display:block;margin-bottom:2px}
+    input,select{width:100%;padding:14px;background:var(--elev);border:1px solid var(--border);color:var(--text);border-radius:12px;font-size:15px;margin-bottom:8px}
+    .player-row{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+    .player-avatar{width:40px;height:40px;background:linear-gradient(135deg,#a855f7,var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;margin-right:12px}
+    .player-info{flex:1}
+    .player-info .name{font-weight:700;font-size:15px}
+    .player-info .meta{font-size:12px;color:var(--muted)}
+    .player-del{width:34px;height:34px;background:rgba(255,82,82,.15);border:none;border-radius:50%;color:var(--red);font-size:18px;cursor:pointer}
+    .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--elev);border:1px solid var(--border);padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:800;opacity:0;transition:all .3s}
+    .toast.show{opacity:1}
+    .toast.ok{border-left:4px solid var(--green)}
+    .toast.err{border-left:4px solid var(--red)}
+    .empty{text-align:center;padding:40px;color:var(--muted)}
+    .history-row{display:flex;align-items:center;gap:10px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:6px}
+    .history-row.undone{opacity:.4;text-decoration:line-through}
+    .history-date{font-size:10px;color:var(--muted);width:70px}
+    .history-match{flex:1;font-size:13px;font-weight:600}
+    .history-score{font-size:14px;font-weight:800;color:var(--gold)}
+    .dart-hdr{padding:calc(20px + var(--st)) 16px 20px;background:var(--card);text-align:center;position:relative}
+    .dart-back{position:absolute;left:14px;top:calc(20px + var(--st));width:44px;height:44px;background:var(--elev);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;color:var(--text)}
+    .dart-step{font-size:12px;font-weight:700;letter-spacing:2px;color:var(--gold)}
+    .dart-name{font-size:24px;font-weight:800;margin-top:8px}
+    .dart-grid{flex:1;display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:18px;overflow-y:auto;align-content:start}
+    .dart-opt{background:var(--card);border:4px solid var(--border);border-radius:18px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer}
+    .dart-opt.picked{border-color:var(--gold)}
+    .dart-opt.off{opacity:.2;pointer-events:none}
+    .dart-shape{width:55px;height:90px;border-radius:27px}
+    .dart-label{font-size:13px;font-weight:700}
+    .dart-foot{padding:18px;padding-bottom:calc(18px + var(--sb))}
+    #screen-game{background:#000}
+    .game-hdr{position:absolute;top:0;left:0;right:0;padding:calc(12px + var(--st)) 16px 12px;display:flex;justify-content:space-between;align-items:center;z-index:50;background:linear-gradient(180deg,rgba(0,0,0,.95),transparent)}
+    .game-menu-btn{width:52px;height:52px;background:rgba(255,255,255,.12);border:none;border-radius:14px;color:#fff;font-size:26px;cursor:pointer}
+    .game-badges{display:flex;gap:8px}
+    .badge{padding:10px 16px;background:rgba(0,0,0,.7);border-radius:18px;font-size:13px;font-weight:700}
+    .badge.gf{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000}
+    .badge.live{background:var(--green);color:#000}
+    .game-arena{position:absolute;inset:0;display:flex;flex-direction:column}
+    .pzone{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow:hidden}
+    .pzone.top{padding-top:80px}
+    .pzone.bot{padding-bottom:calc(20px + var(--sb))}
+    .pbar{position:absolute;top:0;bottom:0;left:0;width:0%;transition:width .4s;z-index:1}
+    .pui{position:relative;z-index:10;text-align:center;width:100%}
+    .phead{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px}
+    .pdart{width:28px;height:46px;border-radius:14px}
+    .pname{font-size:20px;font-weight:800;text-transform:uppercase}
+    .score-row{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:16px}
+    .score-adj{width:76px;height:76px;border-radius:50%;border:4px solid rgba(255,255,255,.2);background:rgba(0,0,0,.5);color:#fff;font-size:42px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+    .score-adj:active{transform:scale(.88);background:rgba(255,255,255,.2)}
+    .score-adj.minus{color:var(--red);border-color:rgba(255,82,82,.5)}
+    .score-adj.plus{color:var(--green);border-color:rgba(0,230,118,.5)}
+    .score-big{font-size:80px;font-weight:900;min-width:110px}
+    .quick-row{display:flex;gap:10px;justify-content:center}
+    .qbtn{min-width:70px;height:56px;padding:0 18px;border-radius:14px;border:3px solid rgba(255,255,255,.15);background:rgba(0,0,0,.5);color:#fff;font-size:20px;font-weight:700;cursor:pointer}
+    .qbtn:active{transform:scale(.9);background:rgba(255,255,255,.2);border-color:var(--green)}
+    .game-mid{height:6px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);position:relative;z-index:20}
+    .reset-btn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:54px;height:54px;background:var(--card);border:3px solid var(--border);border-radius:50%;color:var(--muted);font-size:26px;cursor:pointer;z-index:21}
+    @media(orientation:landscape) and (max-height:500px){.pzone.top{padding-top:60px}.score-big{font-size:52px;min-width:80px}.score-adj{width:56px;height:56px;font-size:30px}.qbtn{min-width:54px;height:42px;font-size:16px}.pname{font-size:15px}}
+    .gmenu{position:fixed;inset:0;background:rgba(0,0,0,.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:400;gap:16px}
+    .gmenu.on{display:flex}
+    .gmenu h2{font-size:26px;margin-bottom:24px}
+    .gmenu-btn{width:280px;padding:18px;border-radius:16px;border:none;font-size:17px;font-weight:700;cursor:pointer}
+    .gmenu-btn.resume{background:var(--green);color:#000}
+    .gmenu-btn.end{background:var(--red);color:#fff}
+    .win{position:fixed;inset:0;background:linear-gradient(135deg,#0a0a12,#15152a);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:500;padding:24px}
+    .win.on{display:flex}
+    .win-trophy{font-size:100px;animation:bounce .6s infinite alternate}
+    @keyframes bounce{to{transform:translateY(-18px) scale(1.05)}}
+    .win-tag{font-size:18px;letter-spacing:4px;color:var(--gold);margin-top:16px}
+    .win-name{font-size:42px;font-weight:900;margin-top:12px}
+    .win-score{font-size:28px;color:var(--dim);margin-top:8px}
+    .win-btns{display:flex;gap:16px;margin-top:28px;flex-wrap:wrap;justify-content:center}
+    .win-btn{padding:16px 32px;border-radius:16px;border:none;font-size:16px;font-weight:700;cursor:pointer}
+    .win-btn.save{background:var(--green);color:#000}
+    .win-btn.again{background:var(--gold);color:#000}
+    .confetti{position:fixed;width:12px;height:12px;top:-20px;animation:fall 3s linear forwards;z-index:501;border-radius:2px}
+    @keyframes fall{to{transform:translateY(100vh) rotate(720deg)}}
+    .dart-modal{position:fixed;inset:0;background:rgba(0,0,0,.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:450;padding:24px}
+    .dart-modal.on{display:flex}
+    .dart-modal-title{font-size:18px;font-weight:800;margin-bottom:8px}
+    .dart-modal-player{font-size:28px;font-weight:900;color:var(--gold);margin-bottom:24px}
+    .dart-modal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:540px}
+    .dart-modal-opt{background:var(--card);border:4px solid var(--border);border-radius:16px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer}
+    .dart-modal-opt.picked{border-color:var(--gold)}
+    .dart-modal-opt.off{opacity:.2;pointer-events:none}
+    .dart-modal-opt .dart-shape{width:44px;height:72px;border-radius:22px}
+    .dart-modal-opt .dart-label{font-size:11px}
+    .dart-modal-btn{margin-top:24px;padding:18px 52px;background:var(--green);color:#000;font-size:18px;font-weight:800;border:none;border-radius:16px;cursor:pointer}
+    .dart-modal-btn:disabled{opacity:.4;cursor:not-allowed}
+    .setup{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999}
+    .setup.hidden{display:none}
+    .setup-logo{font-size:80px;margin-bottom:24px}
+    .setup-title{font-size:32px;font-weight:900;color:var(--gold)}
+    .setup-sub{font-size:14px;color:var(--dim);margin-top:8px}
+    .setup-status{margin-top:32px;font-size:16px}
+    .setup-spin{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin-top:24px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .setup-err{color:var(--red);margin-top:16px;font-size:13px;text-align:center;max-width:300px}
+    @media(min-width:1024px){
+      .mobile-view{display:none!important}
+      .desktop-view{display:grid!important;grid-template-columns:340px 1fr 360px;height:100vh}
+      .d-panel{background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh}
+      .d-panel:last-child{border-right:none;border-left:1px solid var(--border)}
+      .d-head{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+      .d-head h2{font-size:20px;font-weight:800}
+      .d-body{flex:1;overflow-y:auto;padding:18px}
+      .d-section{margin-bottom:22px}
+      .d-section-title{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+      .d-center{background:var(--bg);display:flex;flex-direction:column;height:100vh}
+      .d-game-wrap{flex:1;margin:20px;background:#000;border-radius:22px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+      .d-game-wrap .game-hdr{position:relative;padding:22px 28px}
+      .d-game-wrap .game-arena{position:relative;flex:1}
+      .d-game-wrap .pzone{padding:45px}
+      .d-game-wrap .pzone.top{padding-top:24px}
+      .d-game-wrap .pzone.bot{padding-bottom:24px}
+      .d-game-wrap .score-big{font-size:120px}
+      .d-game-wrap .score-adj{width:95px;height:95px;font-size:54px;border-width:5px}
+      .d-game-wrap .qbtn{min-width:88px;height:68px;font-size:26px;border-width:4px}
+      .d-game-wrap .pname{font-size:28px}
+      .d-game-wrap .pdart{width:36px;height:58px}
+      .d-game-wrap .score-row{gap:24px;margin-bottom:22px}
+      .d-game-wrap .quick-row{gap:14px}
+      .d-draw-row{display:flex;align-items:center;gap:12px;padding:14px;background:var(--elev);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;cursor:pointer}
+      .d-draw-row:hover{border-color:var(--gold)}
+      .d-draw-row.done{opacity:.5}
+      .d-draw-row.gf{border-color:var(--gold)}
+      .d-draw-num{width:34px;height:34px;background:var(--card);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+      .d-draw-row.done .d-draw-num{background:var(--green);color:#000}
+      .d-draw-players{flex:1;font-weight:600}
+      .d-draw-score{font-weight:800;color:var(--gold)}
+      .d-player-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px}
+      .d-player-name{flex:1;font-weight:600}
+      .d-player-stat{color:var(--muted);margin-right:12px}
+      .d-player-del{width:30px;height:30px;background:rgba(255,82,82,.15);border:none;border-radius:50%;color:var(--red);font-size:16px;cursor:pointer}
+      .d-history-row{display:flex;align-items:center;gap:8px;padding:10px;background:var(--elev);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;font-size:12px}
+      .d-history-row.undone{opacity:.4}
+      .d-history-date{color:var(--muted);font-size:10px}
+      .d-history-match{flex:1}
+      .d-history-score{font-weight:700;color:var(--gold)}
+    }
+    @media(max-width:1023px){.desktop-view{display:none!important}}
+  </style>
+</head>
+<body>
+<div class="setup" id="setup"><div class="setup-logo">🎯</div><div class="setup-title">PopDarts</div><div class="setup-sub">Real-time multiplayer scoring</div><div class="setup-spin" id="setup-spin"></div><div class="setup-status" id="setup-status">Connecting...</div><div class="setup-err" id="setup-err"></div></div>
+
+<div class="mobile-view">
+  <div id="screen-home" class="screen active">
+    <div class="hdr"><div class="logo">🎯 PopDarts</div><div class="conn"><span class="conn-dot" id="dot1"></span><span id="txt1">Offline</span></div></div>
+    <div class="content">
+      <div id="live-zone"></div>
+      <div id="hero-zone"></div>
+      <div class="actions">
+        <div class="act gold" onclick="playNext()"><div class="act-icon">▶️</div><div class="act-text">Play</div></div>
+        <div class="act" onclick="openCustom()"><div class="act-icon">🎮</div><div class="act-text">Quick</div></div>
+        <div class="act" onclick="genDraw()"><div class="act-icon">🎲</div><div class="act-text">Draw</div></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-val" id="s-players">0</div><div class="stat-name">Players</div></div>
+        <div class="stat"><div class="stat-val" id="s-games">0/0</div><div class="stat-name">Games</div></div>
+        <div class="stat"><div class="stat-val" id="s-target">21</div><div class="stat-name">Target</div></div>
+      </div>
+      <div class="tabs">
+        <button class="tab on" onclick="switchTab('draw',this)">📋 Draw</button>
+        <button class="tab" onclick="switchTab('stand',this)">📊 Standings</button>
+        <button class="tab" onclick="switchTab('all',this)">🏆 All-Time</button>
+        <button class="tab" onclick="switchTab('hist',this)">📜 History</button>
+      </div>
+      <div id="tab-draw"></div>
+      <div id="tab-stand" style="display:none"></div>
+      <div id="tab-all" style="display:none"></div>
+      <div id="tab-hist" style="display:none"></div>
+    </div>
+  </div>
+  <div id="screen-settings" class="screen">
+    <div class="hdr"><div class="logo" style="font-size:18px">⚙️ Settings</div><div class="conn"><span class="conn-dot" id="dot2"></span><span id="txt2">Offline</span></div></div>
+    <div class="content">
+      <div class="card"><div class="card-label">👥 Players</div><div style="display:flex;gap:8px;margin-bottom:12px"><input type="text" id="inp-player" placeholder="Player name..."><button class="btn btn-green" style="width:auto;padding:14px 20px" onclick="addPlayer()">+</button></div><div id="player-list"></div></div>
+      <div class="card"><div class="card-label">🏆 Championship</div><button class="btn btn-gold" onclick="genDraw()">🎲 Generate Draw</button><button class="btn btn-red" onclick="clearDraw()">Clear All</button></div>
+      <div class="card"><div class="card-label">🎯 Target Score</div><select id="sel-target" onchange="setTarget(this.value)"><option value="11">First to 11</option><option value="15">First to 15</option><option value="21" selected>First to 21</option><option value="31">First to 31</option></select></div>
+      <div class="card"><div class="card-label">🔧 Data Management</div><button class="btn btn-blue" onclick="resetToCorrectStats()">📊 Reset to Corrected Stats</button><p style="font-size:11px;color:var(--muted);margin-top:8px">Loads the audited all-time stats with fixed math</p></div>
+    </div>
+  </div>
+  <div id="screen-custom" class="screen">
+    <div class="hdr"><button class="btn btn-gray" onclick="go('home')" style="width:auto;padding:10px 16px;margin:0">← Back</button><div class="logo" style="font-size:17px">Quick Match</div><div style="width:80px"></div></div>
+    <div class="content"><div class="card"><div class="card-label">Player 1</div><select id="sel-p1"></select></div><div class="card"><div class="card-label">Player 2</div><select id="sel-p2"></select></div><button class="btn btn-gold" onclick="startCustom()">🎮 Start Match</button></div>
+  </div>
+  <div id="screen-dart" class="screen">
+    <div class="dart-hdr"><button class="dart-back" onclick="go('home')">←</button><div class="dart-step" id="dart-step">STEP 1 OF 2</div><div class="dart-name" id="dart-player">Player</div></div>
+    <div class="dart-grid" id="dart-grid"></div>
+    <div class="dart-foot"><button class="btn btn-green" id="dart-confirm" onclick="confirmDart()" disabled>Select Dart</button></div>
+  </div>
+  <div id="screen-game" class="screen">
+    <div class="game-hdr"><button class="game-menu-btn" onclick="openMenu()">☰</button><div class="game-badges"><div class="badge" id="g-label">Game</div><div class="badge live">🔴 LIVE</div></div></div>
+    <div class="game-arena">
+      <div class="pzone top"><div class="pbar" id="bar1"></div><div class="pui"><div class="phead"><div class="pdart" id="dart1"></div><span class="pname" id="name1">P1</span></div><div class="score-row"><button class="score-adj minus" onclick="adj(1,-1)">−</button><div class="score-big" id="sc1">0</div><button class="score-adj plus" onclick="adj(1,1)">+</button></div><div class="quick-row"><button class="qbtn" onclick="adj(1,2)">+2</button><button class="qbtn" onclick="adj(1,3)">+3</button><button class="qbtn" onclick="adj(1,4)">+4</button><button class="qbtn" onclick="adj(1,5)">+5</button></div></div></div>
+      <div class="game-mid"><button class="reset-btn" onclick="resetScores()">↺</button></div>
+      <div class="pzone bot"><div class="pbar" id="bar2"></div><div class="pui"><div class="phead"><div class="pdart" id="dart2"></div><span class="pname" id="name2">P2</span></div><div class="score-row"><button class="score-adj minus" onclick="adj(2,-1)">−</button><div class="score-big" id="sc2">0</div><button class="score-adj plus" onclick="adj(2,1)">+</button></div><div class="quick-row"><button class="qbtn" onclick="adj(2,2)">+2</button><button class="qbtn" onclick="adj(2,3)">+3</button><button class="qbtn" onclick="adj(2,4)">+4</button><button class="qbtn" onclick="adj(2,5)">+5</button></div></div></div>
+    </div>
+  </div>
+  <nav class="nav" id="nav"><button class="nav-btn on" data-s="home"><span class="nav-icon">🏠</span>Home</button><button class="nav-btn" data-s="settings"><span class="nav-icon">⚙️</span>Settings</button></nav>
+</div>
+
+<div class="desktop-view" style="display:none">
+  <div class="d-panel">
+    <div class="d-head"><h2>🎯 PopDarts</h2><div class="conn" style="padding:6px 12px"><span class="conn-dot" id="dot3"></span><span id="txt3">Offline</span></div></div>
+    <div class="d-body">
+      <div class="d-section"><div class="d-section-title">👥 Players</div><div style="display:flex;gap:8px;margin-bottom:12px"><input type="text" id="d-inp-player" placeholder="Add player..."><button class="btn btn-green" style="width:auto;margin:0;padding:12px 16px" onclick="addPlayerD()">+</button></div><div id="d-player-list"></div></div>
+      <div class="d-section"><div class="d-section-title">📋 Draw</div><div id="d-draw"></div></div>
+      <div class="d-section"><button class="btn btn-gold" style="font-size:14px;padding:12px" onclick="genDraw()">🎲 Generate Draw</button><button class="btn btn-gray" style="font-size:14px;padding:12px" onclick="clearDraw()">Clear Draw</button></div>
+    </div>
+  </div>
+  <div class="d-center">
+    <div class="d-head"><h2>🏟️ Stadium</h2><select id="d-target" onchange="setTarget(this.value)" style="width:auto;padding:10px 14px"><option value="11">To 11</option><option value="15">To 15</option><option value="21" selected>To 21</option><option value="31">To 31</option></select></div>
+    <div id="d-game-area" style="flex:1;display:flex;flex-direction:column"></div>
+  </div>
+  <div class="d-panel">
+    <div class="d-head"><h2>📊 Stats</h2></div>
+    <div class="d-body">
+      <div class="d-section"><div class="d-section-title">🏆 Standings</div><div id="d-stand"></div></div>
+      <div class="d-section"><div class="d-section-title">📈 All-Time</div><div id="d-all"></div></div>
+      <div class="d-section"><div class="d-section-title">📜 History <button onclick="undoLast()" style="background:rgba(255,82,82,.15);border:none;color:var(--red);padding:4px 10px;border-radius:6px;font-size:10px;cursor:pointer">↩ Undo</button></div><div id="d-history"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="gmenu" id="gmenu"><h2>⏸️ Paused</h2><button class="gmenu-btn resume" onclick="closeMenu()">▶️ Resume</button><button class="gmenu-btn end" onclick="endGame()">🚪 End Game</button></div>
+<div class="win" id="win"><div class="win-trophy">🏆</div><div class="win-tag">🎉 WINNER 🎉</div><div class="win-name" id="win-name">Player</div><div class="win-score" id="win-score">21 - 15</div><div class="win-btns"><button class="win-btn save" onclick="saveGame()">💾 Save & Exit</button><button class="win-btn again" onclick="rematch()">🔄 Rematch</button></div></div>
+<div class="dart-modal" id="dart-modal"><div class="dart-modal-title" id="dm-step">STEP 1 OF 2</div><div class="dart-modal-player" id="dm-player">Player</div><div class="dart-modal-grid" id="dm-grid"></div><button class="dart-modal-btn" id="dm-confirm" onclick="confirmDartD()" disabled>Select Dart</button></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyCRRQgDDqIvr0tBZDs2fzqSWNHDOxfbBNE",authDomain:"popdarts-f2157.firebaseapp.com",databaseURL:"https://popdarts-f2157-default-rtdb.firebaseio.com",projectId:"popdarts-f2157",storageBucket:"popdarts-f2157.firebasestorage.app",messagingSenderId:"886756771244",appId:"1:886756771244:web:d2e99b3f474944ba5aa609"};
+
+const DARTS=[{id:'black-green',name:'Blk/Grn',grad:'linear-gradient(180deg,#1a1a1a,#22c55e,#1a1a1a)',color:'#22c55e'},{id:'tropical',name:'Tropical',grad:'linear-gradient(180deg,#f97316,#0891b2,#ec4899)',color:'#f97316'},{id:'black-blue',name:'Blk/Blue',grad:'linear-gradient(180deg,#1a1a1a,#3b82f6,#1a1a1a)',color:'#3b82f6'},{id:'white-purple',name:'Wht/Purp',grad:'linear-gradient(180deg,#f0f0f0,#a855f7,#f0f0f0)',color:'#a855f7'},{id:'cyan',name:'Cyan',grad:'linear-gradient(180deg,#06b6d4,#0891b2)',color:'#06b6d4'},{id:'white-teal',name:'Wht/Teal',grad:'linear-gradient(180deg,#f0f0f0,#14b8a6,#f0f0f0)',color:'#14b8a6'},{id:'lime',name:'Lime',grad:'linear-gradient(180deg,#84cc16,#65a30d)',color:'#84cc16'},{id:'red',name:'Red',grad:'linear-gradient(180deg,#ef4444,#dc2626)',color:'#ef4444'}];
+
+const MIGRATED_STATS={'Stocky':{gp:27,wins:17,losses:10,pf:368,pa:311,champs:2},'Slim':{gp:25,wins:20,losses:5,pf:411,pa:193,champs:1},'Fraser':{gp:20,wins:11,losses:9,pf:241,pa:222,champs:1},'Jody':{gp:8,wins:2,losses:6,pf:67,pa:69,champs:0},'Luke':{gp:21,wins:8,losses:13,pf:209,pa:276,champs:0},'Todd':{gp:6,wins:0,losses:6,pf:33,pa:126,champs:0},'BOB':{gp:8,wins:0,losses:8,pf:45,pa:168,champs:0}};
+
+let db=null,DATA={players:[],draw:[],stats:[],history:[],target:21,live:null},GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false},connected=false,desktopPlaying=false,migrationDone=false;
+
+function initFirebase(){try{firebase.initializeApp(firebaseConfig);db=firebase.database();db.ref('.info/connected').on('value',s=>{connected=s.val()===true;updateConn();if(connected){document.getElementById('setup').classList.add('hidden');checkMigration();}});setupListeners();}catch(e){document.getElementById('setup-spin').style.display='none';document.getElementById('setup-status').textContent='Error';document.getElementById('setup-err').textContent=e.message;}}
+
+async function checkMigration(){if(migrationDone)return;const snap=await db.ref('stats').once('value');if(!snap.exists()){console.log('Migrating stats...');await db.ref('stats').set(MIGRATED_STATS);const pu={};Object.keys(MIGRATED_STATS).forEach(p=>pu[p]=true);await db.ref('players').set(pu);toast('Stats migrated!','ok');}migrationDone=true;}
+
+function updateConn(){['dot1','dot2','dot3'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('on',connected);});['txt1','txt2','txt3'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=connected?'Live':'Offline';});}
+
+function setupListeners(){db.ref('players').on('value',s=>{const v=s.val();DATA.players=v?Object.keys(v).filter(k=>v[k]!==false):[];render();});db.ref('draw').on('value',s=>{const v=s.val();DATA.draw=v?Object.values(v).sort((a,b)=>{if(a.isGF)return 1;if(b.isGF)return -1;return(a.num||0)-(b.num||0);}):[];render();});db.ref('stats').on('value',s=>{const v=s.val();if(v){DATA.stats=Object.keys(v).map(n=>({name:n,...v[n]}));DATA.stats.sort((a,b)=>{if((b.champs||0)!==(a.champs||0))return(b.champs||0)-(a.champs||0);return((b.pf||0)-(b.pa||0))-((a.pf||0)-(a.pa||0));});}else DATA.stats=[];render();});db.ref('history').orderByChild('timestamp').limitToLast(50).on('value',s=>{const v=s.val();if(v){DATA.history=Object.keys(v).map(k=>({id:k,...v[k]}));DATA.history.sort((a,b)=>b.timestamp-a.timestamp);}else DATA.history=[];render();});db.ref('config/target').on('value',s=>{DATA.target=s.val()||21;document.getElementById('sel-target').value=DATA.target;const dt=document.getElementById('d-target');if(dt)dt.value=DATA.target;render();});db.ref('live').on('value',s=>{const live=s.val();if(live&&live.active){DATA.live=live;if(GAME.p1&&live.player1===GAME.p1&&live.player2===GAME.p2){if(live.score1!==GAME.s1||live.score2!==GAME.s2){GAME.s1=live.score1;GAME.s2=live.score2;updateGameUI();if(GAME.s1>=DATA.target){win(GAME.p1);return;}if(GAME.s2>=DATA.target){win(GAME.p2);return;}}}}else DATA.live=null;render();});}
+
+document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>go(b.dataset.s));
+function go(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('screen-'+s)?.classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('on',b.dataset.s===s));document.getElementById('nav').style.display=['game','dart','custom'].includes(s)?'none':'flex';}
+function switchTab(t,btn){document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');['draw','stand','all','hist'].forEach(x=>document.getElementById('tab-'+x).style.display=x===t?'block':'none');}
+
+function render(){const done=DATA.draw.filter(g=>!g.isGF&&g.winner).length,total=DATA.draw.filter(g=>!g.isGF).length;document.getElementById('s-players').textContent=DATA.players.length;document.getElementById('s-games').textContent=total?done+'/'+total:'0';document.getElementById('s-target').textContent=DATA.target;renderLive();renderHero();renderDraw();renderStand();renderAll();renderHistory();renderPlayers();if(window.innerWidth>=1024)renderDesktop();}
+
+function renderLive(){const el=document.getElementById('live-zone');if(DATA.live&&DATA.live.active){const inGame=GAME.p1===DATA.live.player1&&GAME.p2===DATA.live.player2;if(!inGame){el.innerHTML=`<div class="live-card" onclick="joinLive()"><div class="live-badge"><span class="live-pulse"></span>LIVE NOW - Tap to Join</div><div class="live-players">${DATA.live.player1} vs ${DATA.live.player2}</div><div class="live-score">${DATA.live.score1} - ${DATA.live.score2}</div><div class="live-tap">👆 Tap to score from this device</div></div>`;return;}}el.innerHTML='';}
+
+function renderHero(){const el=document.getElementById('hero-zone'),n=getNext();if(!DATA.draw.length){el.innerHTML=`<div class="hero"><div class="hero-tag" style="color:var(--muted)">NO CHAMPIONSHIP</div><div class="hero-match">${DATA.players.length<2?'Add 2+ players':'Tap Draw'}</div></div>`;return;}if(!n){el.innerHTML=`<div class="hero"><div class="hero-tag">🎉 COMPLETE</div><div class="hero-match">All games done!</div></div>`;return;}const g=n.game;el.innerHTML=`<div class="hero ${g.isGF?'gf':''}"><div class="hero-tag">${g.isGF?'🏆 GRAND FINAL 🏆':'GAME '+g.num}</div><div class="hero-match">${g.p1}<span class="hero-vs">vs</span>${g.p2}</div><button class="hero-btn" onclick="playNext()">▶️ Play</button></div>`;}
+
+function renderDraw(){const el=document.getElementById('tab-draw');if(!DATA.draw.length){el.innerHTML='<div class="empty">No games yet</div>';return;}el.innerHTML=DATA.draw.map((g,i)=>`<div class="draw-row ${g.winner?'done':''} ${g.isGF?'gf':''}" ${g.winner?'':`onclick="playIdx(${i})"`}><div class="draw-num">${g.isGF?'🏆':g.num}</div><div class="draw-players">${g.p1} vs ${g.p2}</div><div class="draw-result">${g.winner?g.s1+'-'+g.s2:'—'}</div></div>`).join('');}
+
+function renderStand(){const el=document.getElementById('tab-stand'),map={};DATA.players.forEach(p=>map[p]={name:p,w:0,l:0,diff:0});DATA.draw.forEach(g=>{if(!g.winner)return;if(map[g.p1]){if(g.winner===g.p1)map[g.p1].w++;else map[g.p1].l++;map[g.p1].diff+=(g.s1||0)-(g.s2||0);}if(map[g.p2]){if(g.winner===g.p2)map[g.p2].w++;else map[g.p2].l++;map[g.p2].diff+=(g.s2||0)-(g.s1||0);}});const arr=Object.values(map).sort((a,b)=>b.w-a.w||b.diff-a.diff);if(!arr.length){el.innerHTML='<div class="empty">No standings</div>';return;}el.innerHTML=`<table class="tbl"><thead><tr><th>Player</th><th>W</th><th>L</th><th>+/-</th></tr></thead><tbody>${arr.map((p,i)=>`<tr class="${i===0?'top':''}"><td>${i===0?'👑 ':''}${p.name}</td><td>${p.w}</td><td>${p.l}</td><td class="${p.diff>0?'plus':p.diff<0?'minus':''}">${p.diff>0?'+':''}${p.diff}</td></tr>`).join('')}</tbody></table>`;}
+
+function renderAll(){const el=document.getElementById('tab-all');if(!DATA.stats.length){el.innerHTML='<div class="empty">No stats yet</div>';return;}el.innerHTML=`<table class="tbl"><thead><tr><th>Player</th><th>GP</th><th>W</th><th>L</th><th>%</th><th>F</th><th>A</th><th>D</th><th>🏆</th></tr></thead><tbody>${DATA.stats.map((s,i)=>{const pct=s.gp?Math.round(s.wins/s.gp*100):0,diff=(s.pf||0)-(s.pa||0);return`<tr class="${i===0?'top':''}"><td>${s.champs?'🏆 ':''}${s.name}</td><td>${s.gp||0}</td><td>${s.wins||0}</td><td>${s.losses||0}</td><td>${pct}</td><td>${s.pf||0}</td><td>${s.pa||0}</td><td class="${diff>0?'plus':diff<0?'minus':''}">${diff>0?'+':''}${diff}</td><td class="${s.champs?'champ':''}">${s.champs||0}</td></tr>`;}).join('')}</tbody></table>`;}
+
+function renderHistory(){const el=document.getElementById('tab-hist');if(!DATA.history.length){el.innerHTML='<div class="empty">No games played yet</div>';return;}const undoable=DATA.history.filter(h=>!h.undone),canUndo=undoable.length>0;el.innerHTML=`${canUndo?`<button class="btn btn-red" onclick="undoLast()" style="margin-bottom:12px">↩ Undo Last Game</button>`:''}${DATA.history.slice(0,20).map(h=>{const date=new Date(h.timestamp).toLocaleDateString('en-AU',{day:'2-digit',month:'short'});return`<div class="history-row ${h.undone?'undone':''}"><div class="history-date">${date}</div><div class="history-match">${h.winner} def ${h.loser}</div><div class="history-score">${h.winScore}-${h.loseScore}</div></div>`;}).join('')}`;}
+
+function renderPlayers(){const el=document.getElementById('player-list');if(!DATA.players.length){el.innerHTML='<div class="empty">No players</div>';return;}el.innerHTML=DATA.players.map(p=>{const s=DATA.stats.find(x=>x.name===p)||{};return`<div class="player-row"><div class="player-avatar">${p[0].toUpperCase()}</div><div class="player-info"><div class="name">${s.champs?'🏆 ':''}${p}</div><div class="meta">${s.gp||0} GP • ${s.wins||0} W</div></div><button class="player-del" onclick="delPlayer('${p.replace(/'/g,"\\'")}')">×</button></div>`;}).join('');}
+
+function getNext(){for(let i=0;i<DATA.draw.length;i++)if(!DATA.draw[i].isGF&&!DATA.draw[i].winner)return{idx:i,game:DATA.draw[i]};for(let i=0;i<DATA.draw.length;i++)if(DATA.draw[i].isGF&&!DATA.draw[i].winner)return{idx:i,game:DATA.draw[i]};return null;}
+
+function renderDesktop(){const pEl=document.getElementById('d-player-list');pEl.innerHTML=DATA.players.length?DATA.players.map(p=>{const s=DATA.stats.find(x=>x.name===p)||{};return`<div class="d-player-row"><span class="d-player-name">${s.champs?'🏆 ':''}${p}</span><span class="d-player-stat">${s.wins||0}W</span><button class="d-player-del" onclick="delPlayer('${p.replace(/'/g,"\\'")}')">×</button></div>`;}).join(''):'<div style="color:var(--muted)">No players</div>';const dEl=document.getElementById('d-draw');dEl.innerHTML=DATA.draw.length?DATA.draw.map((g,i)=>`<div class="d-draw-row ${g.winner?'done':''} ${g.isGF?'gf':''}" ${g.winner?'':`onclick="playIdxD(${i})"`}><div class="d-draw-num">${g.isGF?'🏆':g.num}</div><div class="d-draw-players">${g.p1} vs ${g.p2}</div><div class="d-draw-score">${g.winner?g.s1+'-'+g.s2:'—'}</div></div>`).join(''):'<div style="color:var(--muted)">No draw</div>';const standMap={};DATA.players.forEach(p=>standMap[p]={name:p,w:0,l:0,diff:0});DATA.draw.forEach(g=>{if(!g.winner)return;if(standMap[g.p1]){if(g.winner===g.p1)standMap[g.p1].w++;else standMap[g.p1].l++;standMap[g.p1].diff+=(g.s1||0)-(g.s2||0);}if(standMap[g.p2]){if(g.winner===g.p2)standMap[g.p2].w++;else standMap[g.p2].l++;standMap[g.p2].diff+=(g.s2||0)-(g.s1||0);}});const standArr=Object.values(standMap).sort((a,b)=>b.w-a.w||b.diff-a.diff);document.getElementById('d-stand').innerHTML=standArr.length?`<table class="tbl" style="font-size:11px"><thead><tr><th>Player</th><th>W</th><th>L</th></tr></thead><tbody>${standArr.map((p,i)=>`<tr class="${i===0?'top':''}"><td>${i===0?'👑 ':''}${p.name}</td><td>${p.w}</td><td>${p.l}</td></tr>`).join('')}</tbody></table>`:'<div style="color:var(--muted)">No standings</div>';document.getElementById('d-all').innerHTML=DATA.stats.length?`<table class="tbl" style="font-size:10px"><thead><tr><th>Player</th><th>W</th><th>D</th><th>🏆</th></tr></thead><tbody>${DATA.stats.map((s,i)=>{const diff=(s.pf||0)-(s.pa||0);return`<tr class="${i===0?'top':''}"><td>${s.champs?'🏆 ':''}${s.name}</td><td>${s.wins||0}</td><td class="${diff>0?'plus':diff<0?'minus':''}">${diff>0?'+':''}${diff}</td><td class="${s.champs?'champ':''}">${s.champs||0}</td></tr>`;}).join('')}</tbody></table>`:'<div style="color:var(--muted)">No stats</div>';document.getElementById('d-history').innerHTML=DATA.history.length?DATA.history.slice(0,10).map(h=>{const date=new Date(h.timestamp).toLocaleDateString('en-AU',{day:'2-digit',month:'short'});return`<div class="d-history-row ${h.undone?'undone':''}"><span class="d-history-date">${date}</span><span class="d-history-match">${h.winner} def ${h.loser}</span><span class="d-history-score">${h.winScore}-${h.loseScore}</span></div>`;}).join(''):'<div style="color:var(--muted);font-size:11px">No history</div>';renderDesktopGame();}
+
+function renderDesktopGame(){const el=document.getElementById('d-game-area');if(desktopPlaying&&GAME.p1){el.innerHTML=buildDesktopGame();return;}if(DATA.live&&DATA.live.active){const d1=DARTS.find(d=>d.id===DATA.live.color1)||DARTS[0],d2=DARTS.find(d=>d.id===DATA.live.color2)||DARTS[2],p1pct=Math.min(100,(DATA.live.score1/DATA.target)*100),p2pct=Math.min(100,(DATA.live.score2/DATA.target)*100);el.innerHTML=`<div class="live-card" onclick="joinLiveD()" style="margin:20px"><div class="live-badge"><span class="live-pulse"></span>LIVE - Click to Join & Score</div><div class="live-players" style="font-size:22px">${DATA.live.player1} vs ${DATA.live.player2}</div><div class="live-score" style="font-size:60px">${DATA.live.score1} - ${DATA.live.score2}</div></div><div class="d-game-wrap" style="pointer-events:none;opacity:.7"><div class="game-hdr"><div></div><div class="game-badges"><div class="badge live">📺 WATCHING</div></div></div><div class="game-arena"><div class="pzone top"><div class="pbar" style="width:${p1pct}%;background:${d1.grad}"></div><div class="pui"><div class="phead"><div class="pdart" style="background:${d1.grad}"></div><span class="pname">${DATA.live.player1}</span></div><div class="score-row"><div class="score-big">${DATA.live.score1}</div></div></div></div><div class="game-mid"></div><div class="pzone bot"><div class="pbar" style="width:${p2pct}%;background:${d2.grad}"></div><div class="pui"><div class="phead"><div class="pdart" style="background:${d2.grad}"></div><span class="pname">${DATA.live.player2}</span></div><div class="score-row"><div class="score-big">${DATA.live.score2}</div></div></div></div></div></div>`;return;}const n=getNext();if(!n){el.innerHTML=`<div style="flex:1;display:flex;align-items:center;justify-content:center"><div class="hero" style="max-width:420px"><div class="hero-tag">${DATA.draw.length?'🎉 COMPLETE':'NO CHAMPIONSHIP'}</div><div class="hero-match">${DATA.draw.length?'All done!':DATA.players.length<2?'Add players':'Generate Draw'}</div></div></div>`;return;}const g=n.game;el.innerHTML=`<div style="flex:1;display:flex;align-items:center;justify-content:center"><div class="hero ${g.isGF?'gf':''}" style="max-width:420px;padding:40px"><div class="hero-tag">${g.isGF?'🏆 GRAND FINAL 🏆':'NEXT GAME '+g.num}</div><div class="hero-match" style="font-size:30px">${g.p1}<span class="hero-vs">vs</span>${g.p2}</div><button class="hero-btn" onclick="playIdxD(${n.idx})">▶️ Play Game</button></div></div>`;}
+
+function buildDesktopGame(){const d1=GAME.d1||DARTS[0],d2=GAME.d2||DARTS[2],p1pct=Math.min(100,(GAME.s1/DATA.target)*100),p2pct=Math.min(100,(GAME.s2/DATA.target)*100);return`<div class="d-game-wrap"><div class="game-hdr"><button class="game-menu-btn" onclick="openMenu()">☰</button><div class="game-badges"><div class="badge ${GAME.isGF?'gf':''}">${GAME.isGF?'🏆 GF':GAME.isChamp?'Game '+GAME.num:'Quick'}</div><div class="badge live">🔴 LIVE</div></div></div><div class="game-arena"><div class="pzone top"><div class="pbar" style="width:${p1pct}%;background:${d1.grad}"></div><div class="pui"><div class="phead"><div class="pdart" style="background:${d1.grad}"></div><span class="pname">${GAME.p1}</span></div><div class="score-row"><button class="score-adj minus" onclick="adj(1,-1)">−</button><div class="score-big">${GAME.s1}</div><button class="score-adj plus" onclick="adj(1,1)">+</button></div><div class="quick-row"><button class="qbtn" onclick="adj(1,2)">+2</button><button class="qbtn" onclick="adj(1,3)">+3</button><button class="qbtn" onclick="adj(1,4)">+4</button><button class="qbtn" onclick="adj(1,5)">+5</button></div></div></div><div class="game-mid"><button class="reset-btn" onclick="resetScores()">↺</button></div><div class="pzone bot"><div class="pbar" style="width:${p2pct}%;background:${d2.grad}"></div><div class="pui"><div class="phead"><div class="pdart" style="background:${d2.grad}"></div><span class="pname">${GAME.p2}</span></div><div class="score-row"><button class="score-adj minus" onclick="adj(2,-1)">−</button><div class="score-big">${GAME.s2}</div><button class="score-adj plus" onclick="adj(2,1)">+</button></div><div class="quick-row"><button class="qbtn" onclick="adj(2,2)">+2</button><button class="qbtn" onclick="adj(2,3)">+3</button><button class="qbtn" onclick="adj(2,4)">+4</button><button class="qbtn" onclick="adj(2,5)">+5</button></div></div></div></div></div>`;}
+
+async function addPlayer(){const inp=document.getElementById('inp-player'),name=inp.value.trim();if(!name)return;if(DATA.players.includes(name)){toast('Already exists','err');return;}await db.ref('players/'+name).set(true);inp.value='';toast('Added!','ok');}
+async function addPlayerD(){const inp=document.getElementById('d-inp-player'),name=inp.value.trim();if(!name)return;await db.ref('players/'+name).set(true);inp.value='';toast('Added!','ok');}
+async function delPlayer(name){if(!confirm('Remove '+name+'?'))return;await db.ref('players/'+name).remove();toast('Removed','ok');}
+document.getElementById('inp-player')?.addEventListener('keypress',e=>{if(e.key==='Enter')addPlayer();});
+document.getElementById('d-inp-player')?.addEventListener('keypress',e=>{if(e.key==='Enter')addPlayerD();});
+
+async function genDraw(){if(DATA.players.length<2){toast('Need 2+ players','err');return;}if(DATA.draw.length&&!confirm('Replace draw?'))return;await db.ref('draw').remove();const pairs=[];for(let i=0;i<DATA.players.length;i++)for(let j=i+1;j<DATA.players.length;j++)pairs.push([DATA.players[i],DATA.players[j]]);for(let i=pairs.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pairs[i],pairs[j]]=[pairs[j],pairs[i]];}const updates={};pairs.forEach((pair,i)=>{updates['game'+(i+1)]={num:i+1,p1:pair[0],p2:pair[1],s1:null,s2:null,winner:null,isGF:false};});await db.ref('draw').set(updates);toast('Draw generated!','ok');}
+async function clearDraw(){if(!confirm('Clear all games?'))return;await db.ref('draw').remove();await db.ref('live').remove();toast('Cleared','ok');}
+function setTarget(val){db.ref('config/target').set(parseInt(val)||21);}
+
+function playNext(){const n=getNext();if(!n){toast(DATA.draw.length?'All done!':'Generate draw','err');return;}playIdx(n.idx);}
+function playIdx(i){const g=DATA.draw[i];if(!g||g.winner)return;GAME={p1:g.p1,p2:g.p2,s1:0,s2:0,d1:null,d2:null,idx:i,num:g.num,isChamp:true,isGF:g.isGF};openDart(1,g.p1);}
+function playIdxD(i){const g=DATA.draw[i];if(!g||g.winner)return;GAME={p1:g.p1,p2:g.p2,s1:0,s2:0,d1:null,d2:null,idx:i,num:g.num,isChamp:true,isGF:g.isGF};openDartD(1,g.p1);}
+
+function openDart(step,name){GAME.step=step;GAME.pick=null;document.getElementById('dart-step').textContent='STEP '+step+' OF 2';document.getElementById('dart-player').textContent=name;document.getElementById('dart-confirm').disabled=true;document.getElementById('dart-grid').innerHTML=DARTS.map(d=>{const off=step===2&&GAME.d1?.id===d.id;return`<div class="dart-opt ${off?'off':''}" data-id="${d.id}" onclick="pickDart('${d.id}')"><div class="dart-shape" style="background:${d.grad}"></div><div class="dart-label">${d.name}</div></div>`;}).join('');go('dart');}
+function pickDart(id){GAME.pick=DARTS.find(d=>d.id===id);document.querySelectorAll('.dart-opt').forEach(el=>el.classList.toggle('picked',el.dataset.id===id));document.getElementById('dart-confirm').disabled=false;}
+function confirmDart(){if(!GAME.pick)return;if(GAME.step===1){GAME.d1=GAME.pick;openDart(2,GAME.p2);}else{GAME.d2=GAME.pick;startGame(false);}}
+
+function openDartD(step,name){GAME.step=step;GAME.pick=null;document.getElementById('dm-step').textContent='STEP '+step+' OF 2';document.getElementById('dm-player').textContent=name;document.getElementById('dm-confirm').disabled=true;document.getElementById('dm-grid').innerHTML=DARTS.map(d=>{const off=step===2&&GAME.d1?.id===d.id;return`<div class="dart-modal-opt ${off?'off':''}" data-id="${d.id}" onclick="pickDartD('${d.id}')"><div class="dart-shape" style="background:${d.grad}"></div><div class="dart-label">${d.name}</div></div>`;}).join('');document.getElementById('dart-modal').classList.add('on');}
+function pickDartD(id){GAME.pick=DARTS.find(d=>d.id===id);document.querySelectorAll('.dart-modal-opt').forEach(el=>el.classList.toggle('picked',el.dataset.id===id));document.getElementById('dm-confirm').disabled=false;}
+function confirmDartD(){if(!GAME.pick)return;if(GAME.step===1){GAME.d1=GAME.pick;openDartD(2,GAME.p2);}else{GAME.d2=GAME.pick;document.getElementById('dart-modal').classList.remove('on');startGame(true);}}
+
+function startGame(isDesktop){GAME.s1=0;GAME.s2=0;desktopPlaying=isDesktop;db.ref('live').set({active:true,player1:GAME.p1,player2:GAME.p2,score1:0,score2:0,color1:GAME.d1.id,color2:GAME.d2.id,target:DATA.target,isChamp:GAME.isChamp,isGF:GAME.isGF,gameNum:GAME.num});if(!isDesktop){setupGameUI();go('game');}else render();}
+function joinLive(){if(!DATA.live)return;GAME={p1:DATA.live.player1,p2:DATA.live.player2,s1:DATA.live.score1,s2:DATA.live.score2,d1:DARTS.find(d=>d.id===DATA.live.color1)||DARTS[0],d2:DARTS.find(d=>d.id===DATA.live.color2)||DARTS[2],idx:-1,num:DATA.live.gameNum,isChamp:DATA.live.isChamp,isGF:DATA.live.isGF};setupGameUI();go('game');}
+function joinLiveD(){if(!DATA.live)return;GAME={p1:DATA.live.player1,p2:DATA.live.player2,s1:DATA.live.score1,s2:DATA.live.score2,d1:DARTS.find(d=>d.id===DATA.live.color1)||DARTS[0],d2:DARTS.find(d=>d.id===DATA.live.color2)||DARTS[2],idx:-1,num:DATA.live.gameNum,isChamp:DATA.live.isChamp,isGF:DATA.live.isGF};desktopPlaying=true;render();}
+function setupGameUI(){document.getElementById('name1').textContent=GAME.p1;document.getElementById('name2').textContent=GAME.p2;document.getElementById('dart1').style.background=GAME.d1.grad;document.getElementById('dart2').style.background=GAME.d2.grad;const lbl=document.getElementById('g-label');if(GAME.isGF){lbl.textContent='🏆 GF';lbl.className='badge gf';}else if(GAME.isChamp){lbl.textContent='Game '+GAME.num;lbl.className='badge';}else{lbl.textContent='Quick';lbl.className='badge';}updateGameUI();}
+
+function adj(p,amt){if(p===1){GAME.s1=Math.max(0,GAME.s1+amt);if(GAME.s1>=DATA.target){GAME.s1=DATA.target;pushScore();win(GAME.p1);return;}}else{GAME.s2=Math.max(0,GAME.s2+amt);if(GAME.s2>=DATA.target){GAME.s2=DATA.target;pushScore();win(GAME.p2);return;}}updateGameUI();pushScore();}
+function pushScore(){db.ref('live').update({score1:GAME.s1,score2:GAME.s2});}
+function updateGameUI(){const sc1El=document.getElementById('sc1'),sc2El=document.getElementById('sc2');if(sc1El)sc1El.textContent=GAME.s1;if(sc2El)sc2El.textContent=GAME.s2;const p1pct=Math.min(100,(GAME.s1/DATA.target)*100),p2pct=Math.min(100,(GAME.s2/DATA.target)*100);const bar1=document.getElementById('bar1'),bar2=document.getElementById('bar2');if(bar1&&GAME.d1){bar1.style.width=p1pct+'%';bar1.style.background=GAME.d1.grad;}if(bar2&&GAME.d2){bar2.style.width=p2pct+'%';bar2.style.background=GAME.d2.grad;}if(desktopPlaying)renderDesktopGame();}
+function resetScores(){if(!confirm('Reset to 0-0?'))return;GAME.s1=0;GAME.s2=0;updateGameUI();pushScore();}
+
+function openMenu(){document.getElementById('gmenu').classList.add('on');}
+function closeMenu(){document.getElementById('gmenu').classList.remove('on');}
+function endGame(){if(!confirm('End without saving?'))return;closeMenu();db.ref('live').remove();desktopPlaying=false;if(window.innerWidth>=1024)render();else go('home');}
+function win(name){document.getElementById('win-name').textContent=name;document.getElementById('win-score').textContent=GAME.s1+' - '+GAME.s2;document.getElementById('win').classList.add('on');confetti();}
+
+async function saveGame(){const winner=GAME.s1>GAME.s2?GAME.p1:GAME.p2,loser=winner===GAME.p1?GAME.p2:GAME.p1,winScore=winner===GAME.p1?GAME.s1:GAME.s2,loseScore=winner===GAME.p1?GAME.s2:GAME.s1;const historyRef=db.ref('history').push();await historyRef.set({timestamp:Date.now(),player1:GAME.p1,player2:GAME.p2,score1:GAME.s1,score2:GAME.s2,winner:winner,loser:loser,winScore:winScore,loseScore:loseScore,isChamp:GAME.isChamp,isGF:GAME.isGF,gameNum:GAME.num,drawKey:GAME.isChamp?(GAME.isGF?'gf':'game'+(GAME.idx+1)):null,undone:false});if(GAME.isChamp&&GAME.idx>=0){const key=GAME.isGF?'gf':'game'+(GAME.idx+1);await db.ref('draw/'+key).update({s1:GAME.s1,s2:GAME.s2,winner:winner});}await updateStats(winner,loser,winScore,loseScore,GAME.isGF?1:0);if(GAME.isChamp&&!GAME.isGF)await checkGrandFinal();toast(GAME.isGF?'🏆 Champion!':'Saved!','ok');await db.ref('live').remove();desktopPlaying=false;document.getElementById('win').classList.remove('on');if(window.innerWidth>=1024)render();else go('home');}
+
+async function updateStats(winner,loser,winScore,loseScore,champAdd){const wSnap=await db.ref('stats/'+winner).once('value'),lSnap=await db.ref('stats/'+loser).once('value');const wStats=wSnap.val()||{gp:0,wins:0,losses:0,pf:0,pa:0,champs:0},lStats=lSnap.val()||{gp:0,wins:0,losses:0,pf:0,pa:0,champs:0};await db.ref('stats/'+winner).set({gp:(wStats.gp||0)+1,wins:(wStats.wins||0)+1,losses:wStats.losses||0,pf:(wStats.pf||0)+winScore,pa:(wStats.pa||0)+loseScore,champs:(wStats.champs||0)+champAdd});await db.ref('stats/'+loser).set({gp:(lStats.gp||0)+1,wins:lStats.wins||0,losses:(lStats.losses||0)+1,pf:(lStats.pf||0)+loseScore,pa:(lStats.pa||0)+winScore,champs:lStats.champs||0});}
+
+async function checkGrandFinal(){const regular=DATA.draw.filter(g=>!g.isGF),allDone=regular.every(g=>g.winner),hasGF=DATA.draw.some(g=>g.isGF);if(allDone&&!hasGF&&regular.length>0){const standMap={};DATA.players.forEach(p=>standMap[p]={name:p,w:0,diff:0});DATA.draw.forEach(g=>{if(!g.winner)return;if(standMap[g.p1]){if(g.winner===g.p1)standMap[g.p1].w++;standMap[g.p1].diff+=(g.s1||0)-(g.s2||0);}if(standMap[g.p2]){if(g.winner===g.p2)standMap[g.p2].w++;standMap[g.p2].diff+=(g.s2||0)-(g.s1||0);}});const sorted=Object.values(standMap).sort((a,b)=>b.w-a.w||b.diff-a.diff);if(sorted.length>=2)await db.ref('draw/gf').set({num:'GF',p1:sorted[0].name,p2:sorted[1].name,s1:null,s2:null,winner:null,isGF:true});}}
+
+async function undoLast(){const undoable=DATA.history.filter(h=>!h.undone);if(!undoable.length){toast('Nothing to undo','err');return;}const last=undoable[0];if(!confirm(`Undo: ${last.winner} def ${last.loser} (${last.winScore}-${last.loseScore})?`))return;const wSnap=await db.ref('stats/'+last.winner).once('value'),lSnap=await db.ref('stats/'+last.loser).once('value');const wStats=wSnap.val(),lStats=lSnap.val();if(wStats)await db.ref('stats/'+last.winner).set({gp:Math.max(0,(wStats.gp||0)-1),wins:Math.max(0,(wStats.wins||0)-1),losses:wStats.losses||0,pf:Math.max(0,(wStats.pf||0)-last.winScore),pa:Math.max(0,(wStats.pa||0)-last.loseScore),champs:Math.max(0,(wStats.champs||0)-(last.isGF?1:0))});if(lStats)await db.ref('stats/'+last.loser).set({gp:Math.max(0,(lStats.gp||0)-1),wins:lStats.wins||0,losses:Math.max(0,(lStats.losses||0)-1),pf:Math.max(0,(lStats.pf||0)-last.loseScore),pa:Math.max(0,(lStats.pa||0)-last.winScore),champs:lStats.champs||0});if(last.isChamp&&last.drawKey)await db.ref('draw/'+last.drawKey).update({s1:null,s2:null,winner:null});if(last.isGF)await db.ref('draw/gf').remove();await db.ref('history/'+last.id).update({undone:true});toast('Game undone!','ok');}
+
+async function resetToCorrectStats(){if(!confirm('This will replace all stats with the audited/corrected values. Continue?'))return;const correctedStats={'Stocky':{gp:27,wins:17,losses:10,pf:368,pa:311,champs:2},'Slim':{gp:25,wins:20,losses:5,pf:411,pa:193,champs:1},'Fraser':{gp:20,wins:11,losses:9,pf:241,pa:222,champs:1},'Jody':{gp:8,wins:2,losses:6,pf:67,pa:69,champs:0},'Luke':{gp:21,wins:8,losses:13,pf:209,pa:276,champs:0},'Todd':{gp:6,wins:0,losses:6,pf:33,pa:126,champs:0},'BOB':{gp:8,wins:0,losses:8,pf:45,pa:168,champs:0}};await db.ref('stats').set(correctedStats);const playerUpdates={};Object.keys(correctedStats).forEach(p=>playerUpdates[p]=true);await db.ref('players').set(playerUpdates);toast('Stats reset to corrected values!','ok');}
+
+function rematch(){document.getElementById('win').classList.remove('on');GAME.s1=0;GAME.s2=0;updateGameUI();pushScore();}
+function confetti(){const cols=[GAME.d1?.color||'#ffc107',GAME.d2?.color||'#3b82f6','#00e676','#ff5252'];for(let i=0;i<40;i++)setTimeout(()=>{const c=document.createElement('div');c.className='confetti';c.style.left=Math.random()*100+'vw';c.style.background=cols[Math.floor(Math.random()*cols.length)];c.style.animationDuration=(2+Math.random()*2)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),4000);},i*25);}
+
+function openCustom(){if(DATA.players.length<2){toast('Add 2+ players','err');return;}document.getElementById('sel-p1').innerHTML=DATA.players.map(p=>`<option>${p}</option>`).join('');document.getElementById('sel-p2').innerHTML=DATA.players.map(p=>`<option>${p}</option>`).join('');if(DATA.players.length>1)document.getElementById('sel-p2').selectedIndex=1;go('custom');}
+function startCustom(){const p1=document.getElementById('sel-p1').value,p2=document.getElementById('sel-p2').value;if(p1===p2){toast('Pick different players','err');return;}GAME={p1,p2,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false};openDart(1,p1);}
+
+function toast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+(type||'ok');setTimeout(()=>el.classList.remove('show'),2500);}
+
+window.addEventListener('resize',render);
+initFirebase();
+console.log('[PopDarts] v8.1 Firebase with History & Undo');
+</script>
+</body>
+</html>
