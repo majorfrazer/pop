@@ -275,7 +275,6 @@
   <div class="install-btns"><button class="install-btn no" onclick="dismissInstall()">Not now</button><button class="install-btn yes" onclick="doInstall()">Install App</button></div>
 </div>
 
-<!-- MOBILE VIEW -->
 <div class="mobile-view">
   <div id="screen-home" class="screen active">
     <div class="hdr"><div class="logo">🎯 PopDarts<span class="demo-badge" id="m-demo-badge" style="display:none">DEMO</span></div><div class="conn"><span class="conn-dot" id="dot1"></span><span id="txt1">Offline</span></div></div>
@@ -342,9 +341,7 @@
   <nav class="nav" id="nav"><button class="nav-btn on" data-s="home"><span class="nav-icon">🏠</span>Home</button><button class="nav-btn" data-s="settings"><span class="nav-icon">⚙️</span>Settings</button></nav>
 </div>
 
-<!-- DESKTOP VIEW -->
 <div class="desktop-view" style="display:none">
-  <!-- TOP: Game / Hero area -->
   <div class="d-top" id="d-top" style="height:55vh">
     <div class="d-top-empty" id="d-empty"><div class="hero" style="max-width:500px;padding:40px" id="d-hero"></div></div>
     <div id="d-game" style="display:none;position:absolute;inset:0">
@@ -356,17 +353,14 @@
         </div>
       </div>
       <div class="d-game-arena">
-        <div class="d-pzone top"><div class="d-pbar" id="d-bar1"></div><div class="d-pui"><div class="d-phead"><div class="d-pdart" id="d-dart1"></div><span class="d-pname" id="d-name1">P1</span></div><div class="d-score-row"><button class="d-score-adj minus" onclick="adj(1,-1)">−</button><div class="d-score-big" id="d-sc1">0</div><button class="d-score-adj plus" onclick="adj(1,1)">+</button></div><div class="d-quick-row"><button class="d-qbtn" onclick="adj(1,2)">+2</button><button class="d-qbtn" onclick="adj(1,3)">+3</button><button class="d-qbtn" onclick="adj(1,4)">+4</button><button class="d-qbtn" onclick="adj(1,5)">+5</button></div></div></div>
+        <div class="d-pzone top"><div class="d-pbar" id="d-bar1"></div><div class="d-pui"><div class="d-phead"><div class="d-pdart" id="d-dart1"></div><span class="d-pname" id="d-name1">P1</span></div><div class="d-score-row"><button class="d-score-adj minus" onclick="adj(1,-1)">−</button><div class="d-score-big" id="d-sc1">0</div><button class="d-score-adj plus" onclick="adj(1,1)">+</button></div><div class="d-quick-row"><button class="d-qbtn" onclick="adj(1,2)">+2</button><button class="d-qbtn" id="d-sc1" style="display:none">0</button><button class="d-qbtn" onclick="adj(1,3)">+3</button><button class="d-qbtn" onclick="adj(1,4)">+4</button><button class="d-qbtn" onclick="adj(1,5)">+5</button></div></div></div>
         <div class="d-game-mid"><button class="d-reset-btn" onclick="resetScores()">↺</button></div>
         <div class="d-pzone"><div class="d-pbar" id="d-bar2"></div><div class="d-pui"><div class="d-phead"><div class="d-pdart" id="d-dart2"></div><span class="d-pname" id="d-name2">P2</span></div><div class="d-score-row"><button class="d-score-adj minus" onclick="adj(2,-1)">−</button><div class="d-score-big" id="d-sc2">0</div><button class="d-score-adj plus" onclick="adj(2,1)">+</button></div><div class="d-quick-row"><button class="d-qbtn" onclick="adj(2,2)">+2</button><button class="d-qbtn" onclick="adj(2,3)">+3</button><button class="d-qbtn" onclick="adj(2,4)">+4</button><button class="d-qbtn" onclick="adj(2,5)">+5</button></div></div></div>
       </div>
     </div>
   </div>
-  <!-- Horizontal resize handle -->
   <div class="d-hresize" id="d-hresize" title="Drag to resize"></div>
-  <!-- Bottom panels -->
   <div class="d-bottom" id="d-bottom">
-    <!-- LEFT PANEL: Primary=Draw, Secondary=Settings -->
     <div class="d-panel d-panel-left" id="d-panel-left" style="width:380px">
       <div class="d-head">
         <div class="d-tabs" style="flex:1">
@@ -376,12 +370,10 @@
         <button id="d-undo-btn" onclick="undoLast()" style="background:rgba(255,82,82,.15);border:none;color:var(--red);padding:5px 10px;border-radius:6px;font-size:10px;cursor:pointer;font-weight:600;flex-shrink:0;margin-left:6px">↩ Undo</button>
       </div>
       <div class="d-body">
-        <!-- Draw tab -->
         <div id="d-left-draw">
           <div id="d-live-zone"></div>
           <div id="d-draw-list"></div>
         </div>
-        <!-- Settings tab -->
         <div id="d-left-settings" style="display:none">
           <div class="d-section">
             <div class="d-section-title">👥 Players</div>
@@ -411,9 +403,7 @@
         </div>
       </div>
     </div>
-    <!-- Vertical resize handle -->
     <div class="d-vresize" id="d-vresize" title="Drag to resize"></div>
-    <!-- RIGHT PANEL: Primary=Standings, Secondary=All-Time -->
     <div class="d-panel d-panel-right" id="d-panel-right">
       <div class="d-head">
         <div class="d-tabs" style="flex:1">
@@ -430,12 +420,10 @@
   </div>
 </div>
 
-<!-- Overlays -->
 <div class="gmenu" id="gmenu"><h2>⏸️ Paused</h2><button class="gmenu-btn resume" onclick="closeMenu()">▶️ Resume Game</button><button class="gmenu-btn home" onclick="goHome()">🏠 View Home</button><button class="gmenu-btn end" onclick="endGame()">🚪 Exit Without Saving</button></div>
 <div class="win" id="win"><div class="win-trophy" id="win-trophy">🏆</div><div class="win-content"><div class="win-tag">🎉 WINNER 🎉</div><div class="win-name" id="win-name">Player</div><div class="win-score" id="win-score">21 - 15</div><div class="win-btns"><button class="win-btn save" id="save-btn" onclick="saveGame()">💾 Save &amp; Exit</button><button class="win-btn again" onclick="rematch()">🔄 Rematch</button></div></div></div>
 <div class="dart-modal" id="dart-modal"><div class="dart-modal-title" id="dm-step">STEP 1 OF 2</div><div class="dart-modal-player" id="dm-player">Player</div><div class="dart-modal-grid" id="dm-grid"></div><button class="dart-modal-btn" id="dm-confirm" onclick="confirmDartD()" disabled>Select Dart</button></div>
 
-<!-- History Modal -->
 <div class="edit-modal" id="history-modal" onclick="if(event.target===this)closeHistoryModal()">
   <div class="edit-box" style="max-width:600px;max-height:85vh;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0">
@@ -447,7 +435,6 @@
   </div>
 </div>
 
-<!-- Edit Result Modal -->
 <div class="edit-modal" id="edit-modal" onclick="if(event.target===this)closeEditModal()">
   <div class="edit-box">
     <h3>✏️ Edit Result</h3>
@@ -664,7 +651,18 @@ function renderDesktop(){
 // ============================================================
 function calcStandings(){
   const map={};DATA.players.forEach(p=>map[p]={name:p,w:0,l:0,pf:0,pa:0});
-  DATA.draw.forEach(g=>{if(!g.winner||g.isGF)return;if(map[g.p1]){if(g.winner===g.p1){map[g.p1].w++;map[g.p1].pf+=g.s1||0;map[g.p1].pa+=g.s2||0;}else{map[g.p1].l++;map[g.p1].pf+=g.s1||0;map[g.p1].pa+=g.s2||0;}}if(map[g.p2]){if(g.winner===g.p2){map[g.p2].w++;map[g.p2].pf+=g.s2||0;map[g.p2].pa+=g.s1||0;}else{map[g.p2].l++;map[g.p2].pf+=g.s2||0;map[g.p2].pa+=g.s1||0;}}});
+  DATA.draw.forEach(g=>{
+    if(!g.winner)return; // Removed the Grand Final check to include GF in For/Against
+    if(map[g.p1]){
+      if(g.winner===g.p1){map[g.p1].w++;map[g.p1].pf+=g.s1||0;map[g.p1].pa+=g.s2||0;}
+      else{map[g.p1].l++;map[g.p1].pf+=g.s1||0;map[g.p1].pa+=g.s2||0;}
+    }
+    if(map[g.p2]){
+      if(g.winner===g.p2){map[g.p2].w++;map[g.p2].pf+=g.s2||0;map[g.p2].pa+=g.s1||0;}
+      else{map[g.p2].l++;map[g.p2].pf+=g.s2||0;map[g.p2].pa+=g.s1||0;}
+    }
+  });
+  // Fixed sorting logic to correctly handle positive/negative differentials
   return Object.values(map).filter(p=>p.w+p.l>0).sort((a,b)=>b.w-a.w||((b.pf-b.pa)-(a.pf-a.pa)));
 }
 function standingsTable(arr,size){
@@ -839,9 +837,6 @@ async function saveGame(){
   saveBtn.disabled=true;
   isSaving=true;
 
-  // *** Snapshot ALL game values NOW, before any await ***
-  // The Firebase live listener fires as soon as we write live/saved=true
-  // and will wipe GAME — so we must capture everything first.
   const G={
     p1:GAME.p1, p2:GAME.p2,
     s1:GAME.s1, s2:GAME.s2,
@@ -849,14 +844,12 @@ async function saveGame(){
     num:GAME.num, drawKey:GAME.drawKey
   };
 
-  // Determine winner from snapshot
   const winner=G.s1>G.s2?G.p1:G.p2;
   const loser=winner===G.p1?G.p2:G.p1;
   const winScore=winner===G.p1?G.s1:G.s2;
   const loseScore=winner===G.p1?G.s2:G.s1;
 
-  // Validate before any Firebase writes
-  if(!winner||!loser||winner==='null'||loser==='null'||winner==='undefined'||loser==='undefined'){
+  if(!winner||!loser||winner==='null'||loser==='null'){
     toast('Game data missing – try again','err');
     saveBtn.disabled=false;isSaving=false;return;
   }
@@ -943,11 +936,9 @@ function cancelDart(){GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num
 function openCustom(){if(DATA.players.length<2){toast('Add 2+ players','err');return;}document.getElementById('sel-p1').innerHTML=DATA.players.map(p=>`<option>${p}</option>`).join('');document.getElementById('sel-p2').innerHTML=DATA.players.map(p=>`<option>${p}</option>`).join('');if(DATA.players.length>1)document.getElementById('sel-p2').selectedIndex=1;go('custom');}
 function startCustom(){const p1=document.getElementById('sel-p1').value,p2=document.getElementById('sel-p2').value;if(p1===p2){toast('Pick different players','err');return;}GAME={p1,p2,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null};openDart(1,p1);}
 
-// Dart selection - mobile
 function openDart(step,name){GAME.step=step;GAME.pick=null;document.getElementById('dart-step').textContent='STEP '+step+' OF 2';document.getElementById('dart-player').textContent=name;document.getElementById('dart-confirm').disabled=true;document.getElementById('dart-grid').innerHTML=DARTS.map(d=>{const off=step===2&&GAME.d1?.id===d.id;return`<div class="dart-opt ${off?'off':''}" data-id="${d.id}" onclick="pickDart('${d.id}')"><div class="dart-circle" style="background:${d.grad}"></div></div>`;}).join('');go('dart');}
 function pickDart(id){GAME.pick=DARTS.find(d=>d.id===id);document.querySelectorAll('.dart-opt').forEach(el=>el.classList.toggle('picked',el.dataset.id===id));document.getElementById('dart-confirm').disabled=false;}
 function confirmDart(){if(!GAME.pick)return;if(GAME.step===1){GAME.d1=GAME.pick;openDart(2,GAME.p2);}else{GAME.d2=GAME.pick;startGame(false);}}
-// Dart selection - desktop
 function openDartD(step,name){GAME.step=step;GAME.pick=null;document.getElementById('dm-step').textContent='STEP '+step+' OF 2';document.getElementById('dm-player').textContent=name;document.getElementById('dm-confirm').disabled=true;document.getElementById('dm-grid').innerHTML=DARTS.map(d=>{const off=step===2&&GAME.d1?.id===d.id;return`<div class="dart-modal-opt ${off?'off':''}" data-id="${d.id}" onclick="pickDartD('${d.id}')"><div class="dart-circle" style="background:${d.grad}"></div></div>`;}).join('');document.getElementById('dart-modal').classList.add('on');}
 function pickDartD(id){GAME.pick=DARTS.find(d=>d.id===id);document.querySelectorAll('.dart-modal-opt').forEach(el=>el.classList.toggle('picked',el.dataset.id===id));document.getElementById('dm-confirm').disabled=false;}
 function confirmDartD(){if(!GAME.pick)return;if(GAME.step===1){GAME.d1=GAME.pick;openDartD(2,GAME.p2);}else{GAME.d2=GAME.pick;document.getElementById('dart-modal').classList.remove('on');startGame(true);}}
@@ -978,17 +969,11 @@ function adj(p,amt){
 }
 function pushScore(){db.ref('live').update({score1:GAME.s1,score2:GAME.s2});}
 
-// ============================================================
-// WIN ANIMATIONS
-// ============================================================
 let trophyX=50,trophyY=50,trophyVX=3,trophyVY=2,trophyScale=1,trophyGrowing=true;
 function startTrophyAnim(){const trophy=document.getElementById('win-trophy');trophyX=50;trophyY=50;trophyVX=(Math.random()>.5?1:-1)*(2+Math.random()*2);trophyVY=(Math.random()>.5?1:-1)*(2+Math.random()*2);trophyScale=1;trophyGrowing=true;function animate(){if(!document.getElementById('win').classList.contains('on')){trophyAnim=null;return;}trophyX+=trophyVX;trophyY+=trophyVY;if(trophyX<=5||trophyX>=95){trophyVX*=-1;trophyX=Math.max(5,Math.min(95,trophyX));}if(trophyY<=10||trophyY>=90){trophyVY*=-1;trophyY=Math.max(10,Math.min(90,trophyY));}if(trophyGrowing){trophyScale+=.02;if(trophyScale>=2)trophyGrowing=false;}else{trophyScale-=.02;if(trophyScale<=1)trophyGrowing=true;}trophy.style.left=trophyX+'%';trophy.style.top=trophyY+'%';trophy.style.transform=`translate(-50%,-50%) scale(${trophyScale})`;trophyAnim=requestAnimationFrame(animate);}animate();}
 function stopTrophyAnim(){if(trophyAnim){cancelAnimationFrame(trophyAnim);trophyAnim=null;}}
 function confetti(){const cols=[GAME.d1?.color||'#ffc107',GAME.d2?.color||'#3b82f6','#00e676','#ff5252'];for(let i=0;i<40;i++)setTimeout(()=>{const c=document.createElement('div');c.className='confetti';c.style.left=Math.random()*100+'vw';c.style.background=cols[Math.floor(Math.random()*cols.length)];c.style.animationDuration=(2+Math.random()*2)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),4000);},i*25);}
 
-// ============================================================
-// STATS TOOLS
-// ============================================================
 async function recalcStats(){
   if(!confirm('Recalculate stats from baseline + Firebase history?'))return;
   const baseline={'Stocky':{gp:27,wins:17,losses:10,pf:368,pa:311,champs:2},'Slim':{gp:25,wins:20,losses:5,pf:411,pa:193,champs:1},'Fraser':{gp:20,wins:11,losses:9,pf:241,pa:222,champs:1},'Jody':{gp:8,wins:2,losses:6,pf:67,pa:69,champs:0},'Luke':{gp:21,wins:8,losses:13,pf:209,pa:276,champs:0},'Todd':{gp:6,wins:0,losses:6,pf:33,pa:126,champs:0},'BOB':{gp:8,wins:0,losses:8,pf:45,pa:168,champs:0}};
@@ -1016,12 +1001,8 @@ async function resetToBaseline(){
   await db.ref('stats').set(baseline);toast('Reset to historical baseline!','ok');
 }
 
-// ============================================================
-// RESIZABLE PANELS (Desktop)
-// ============================================================
 (function(){
   const HMIN=100,HMAX=0.85,VMIN=200,VMAX=0.75;
-  // Horizontal resize (top vs bottom)
   const hHandle=document.getElementById('d-hresize');
   let hDragging=false,hStartY=0,hStartH=0;
   function hDown(e){hDragging=true;hStartY=e.clientY||e.touches?.[0]?.clientY||0;hStartH=document.getElementById('d-top').getBoundingClientRect().height;hHandle.classList.add('dragging');e.preventDefault();}
@@ -1033,7 +1014,6 @@ async function resetToBaseline(){
   document.addEventListener('touchmove',hMove,{passive:false});
   document.addEventListener('mouseup',hUp);
   document.addEventListener('touchend',hUp);
-  // Vertical resize (left vs right panel)
   const vHandle=document.getElementById('d-vresize');
   let vDragging=false,vStartX=0,vStartW=0;
   function vDown(e){vDragging=true;vStartX=e.clientX||e.touches?.[0]?.clientX||0;vStartW=document.getElementById('d-panel-left').getBoundingClientRect().width;vHandle.classList.add('dragging');e.preventDefault();}
@@ -1047,9 +1027,6 @@ async function resetToBaseline(){
   document.addEventListener('touchend',vUp);
 })();
 
-// ============================================================
-// PWA INSTALL
-// ============================================================
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();window.deferredPrompt=e;setTimeout(()=>{if(!localStorage.getItem('installDismissed'))document.getElementById('install-banner').classList.add('show');},2000);});
 function doInstall(){if(window.deferredPrompt){window.deferredPrompt.prompt();window.deferredPrompt.userChoice.then(()=>{window.deferredPrompt=null;document.getElementById('install-banner').classList.remove('show');});}else{alert(/iphone|ipad|ipod/i.test(navigator.userAgent)?'Tap Share → Add to Home Screen':'Use browser menu to install');document.getElementById('install-banner').classList.remove('show');}}
 function dismissInstall(){document.getElementById('install-banner').classList.remove('show');localStorage.setItem('installDismissed','1');}
@@ -1057,7 +1034,6 @@ function dismissInstall(){document.getElementById('install-banner').classList.re
 function toast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+(type||'ok');setTimeout(()=>el.classList.remove('show'),2500);}
 window.addEventListener('resize',render);
 initFirebase();
-console.log('[PopDarts] v9.0 - Panel Restructure + History Edit + Resizable + Demo Fix + Snapshot');
 </script>
 </body>
 </html>
