@@ -1,10 +1,10 @@
 {
-  "name": "PopDarts Championship",
+  "name": "PopDarts",
   "short_name": "PopDarts",
   "description": "Real-time multiplayer darts scoring",
   "start_url": "index.html",
   "display": "standalone",
-  "orientation": "any",
+  "orientation": "portrait",
   "background_color": "#0a0a12",
   "theme_color": "#0a0a12",
   "icons": [
