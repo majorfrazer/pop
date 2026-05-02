@@ -496,7 +496,14 @@ function updateConn(){
 function setupListeners(){
   db.ref('players').on('value',s=>{DATA.players=s.val()?Object.keys(s.val()).filter(k=>s.val()[k]).sort():[];render();});
   db.ref('draw').on('value',s=>{const v=s.val();DATA.draw=v?Object.entries(v).map(([k,g])=>({...g,key:k})).sort((a,b)=>{if(a.isGF)return 1;if(b.isGF)return -1;return(a.num||0)-(b.num||0);}):[];render();});
-  db.ref('stats').on('value',s=>{const v=s.val();if(v){DATA.stats=Object.keys(v).filter(n=>n&&n!=='null'&&n!=='undefined').map(n=>({name:n,...v[n]}));DATA.stats.sort((a,b)=>(b.champs||0)-(a.champs||0)||((b.pf||0)-(b.pa||0))-((a.pf||0)-(a.pa||0)));}else DATA.stats=[];render();});
+  db.ref('stats').on('value',s=>{
+    const v=s.val();
+    if(v){
+      DATA.stats=Object.keys(v).filter(n=>n&&n!=='null'&&n!=='undefined').map(n=>({name:n,...v[n]}));
+      DATA.stats.sort((a,b)=>(b.champs||0)-(a.champs||0)||((b.gp?b.wins/b.gp:0)-(a.gp?a.wins/a.gp:0)));
+    }else DATA.stats=[];
+    render();
+  });
   db.ref('history').orderByChild('timestamp').limitToLast(200).on('value',s=>{const v=s.val();DATA.history=v?Object.keys(v).map(k=>({id:k,...v[k]})).filter(h=>h.winner&&h.loser).sort((a,b)=>b.timestamp-a.timestamp):[];render();});
   db.ref('config/target').on('value',s=>{DATA.target=s.val()||21;const el=document.getElementById('sel-target');if(el)el.value=DATA.target;const dt=document.getElementById('d-target');if(dt)dt.value=DATA.target;render();});
   db.ref('config/demo').on('value',s=>{DATA.demo=s.val()===true;updateDemoUI();render();});
