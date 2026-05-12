@@ -202,29 +202,22 @@
     @media(min-width:1024px){
       .mobile-view{display:none!important}
       .desktop-view{display:flex!important;flex-direction:column;height:100vh;overflow:hidden}
-      /* Top game area */
       .d-top{background:#000;position:relative;flex:none;overflow:hidden}
       .d-top-empty{display:flex;align-items:center;justify-content:center;height:100%}
-      /* Horizontal resize handle */
       .d-hresize{height:5px;background:var(--border);cursor:ns-resize;flex-shrink:0;transition:background .2s}
       .d-hresize:hover,.d-hresize.dragging{background:var(--gold)}
-      /* Bottom panels */
       .d-bottom{display:flex;flex:1;min-height:0;overflow:hidden}
       .d-panel{display:flex;flex-direction:column;overflow:hidden;background:var(--card)}
       .d-panel-left{flex:none;border-right:1px solid var(--border)}
       .d-panel-right{flex:1;min-width:200px}
-      /* Vertical resize handle */
       .d-vresize{width:5px;background:var(--border);cursor:ew-resize;flex-shrink:0;transition:background .2s}
       .d-vresize:hover,.d-vresize.dragging{background:var(--gold)}
-      /* Panel head */
       .d-head{padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:8px}
       .d-head h2{font-size:13px;font-weight:800;white-space:nowrap}
       .d-body{flex:1;overflow-y:auto;padding:10px}
-      /* Panel tabs */
       .d-tabs{display:flex;background:var(--elev);border-radius:8px;padding:3px;margin-bottom:10px;flex-shrink:0}
       .d-tab{flex:1;padding:6px 4px;text-align:center;font-size:10px;font-weight:700;color:var(--muted);background:none;border:none;border-radius:5px;cursor:pointer;white-space:nowrap}
       .d-tab.on{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000}
-      /* Desktop draw rows */
       .d-draw-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--elev);border:1px solid var(--border);border-radius:8px;margin-bottom:5px;cursor:pointer;font-size:12px;transition:border-color .15s}
       .d-draw-row:hover{border-color:var(--gold)}
       .d-draw-row.done{opacity:.5}
@@ -240,7 +233,6 @@
       .d-player-chip button{background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;padding:0 2px}
       .d-live-card{background:linear-gradient(135deg,#0a2818,#041810);border:2px solid var(--green);border-radius:10px;padding:10px;margin-bottom:8px;cursor:pointer}
       .d-live-card:hover{border-color:#4ade80}
-      /* Desktop game view */
       .d-game-hdr{position:absolute;top:0;left:0;right:0;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;z-index:50;background:linear-gradient(180deg,rgba(0,0,0,.9),transparent)}
       .d-game-arena{position:absolute;inset:0;display:flex;flex-direction:column}
       .d-pzone{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;overflow:hidden}
@@ -284,6 +276,10 @@
       <div class="actions">
         <div class="act gold" onclick="playNext()"><div class="act-icon">▶️</div><div class="act-text">Play Next</div></div>
         <div class="act" onclick="openCustom()"><div class="act-icon">🎮</div><div class="act-text">Quick Match</div></div>
+        <div class="act" onclick="openPairs()" style="grid-column: span 2; border-color:var(--gold); display:flex; align-items:center; justify-content:center; gap:10px; padding: 12px;">
+           <div class="act-icon" style="margin:0;">👯</div>
+           <div class="act-text" style="font-size:14px; color:var(--gold)">Pairs Event (1st to 69)</div>
+        </div>
       </div>
       <div class="stats-row">
         <div class="stat"><div class="stat-val" id="s-players">0</div><div class="stat-name">Players</div></div>
@@ -300,6 +296,7 @@
       <div id="tab-all" style="display:none"></div>
     </div>
   </div>
+
   <div id="screen-settings" class="screen">
     <div class="hdr"><div class="logo" style="font-size:18px">⚙️ Settings</div><div class="conn"><span class="conn-dot" id="dot2"></span><span id="txt2">Offline</span></div></div>
     <div class="content">
@@ -311,7 +308,15 @@
         <div id="player-list" style="margin-top:12px"></div>
       </div>
       <div class="card"><div class="card-label">🏆 Championship</div><button class="btn btn-gold" onclick="genDraw()">🎲 Generate Draw</button><button class="btn btn-red" onclick="clearDraw()">Clear Championship</button></div>
-      <div class="card"><div class="card-label">🎯 Target Score</div><select id="sel-target" onchange="setTarget(this.value)"><option value="11">First to 11</option><option value="15">First to 15</option><option value="21" selected>First to 21</option><option value="31">First to 31</option></select></div>
+      <div class="card"><div class="card-label">🎯 Target Score</div>
+        <select id="sel-target" onchange="setTarget(this.value)">
+          <option value="11">First to 11</option>
+          <option value="15">First to 15</option>
+          <option value="21" selected>First to 21</option>
+          <option value="31">First to 31</option>
+          <option value="69">First to 69 (Drop Double)</option>
+        </select>
+      </div>
       <div class="card"><div class="card-label">🧪 Demo Mode</div><button class="btn btn-blue" id="m-demo-toggle" onclick="toggleDemo()">Enable Demo Mode</button><p style="font-size:11px;color:var(--muted);margin-top:8px">Test without affecting All-Time stats</p></div>
       <div class="card"><div class="card-label">📜 Game History</div><button class="btn btn-gray" onclick="openHistoryModal()" style="margin-bottom:8px;font-size:13px;padding:10px">📋 View &amp; Edit Full History</button><div id="m-history"></div></div>
       <div class="card"><div class="card-label">🔧 Data Tools</div>
@@ -321,10 +326,35 @@
       </div>
     </div>
   </div>
+
   <div id="screen-custom" class="screen">
     <div class="hdr"><button class="btn btn-gray" onclick="go('home')" style="width:auto;padding:10px 16px;margin:0">← Back</button><div class="logo" style="font-size:17px">Quick Match</div><div style="width:80px"></div></div>
     <div class="content"><div class="card"><div class="card-label">Player 1</div><select id="sel-p1"></select></div><div class="card"><div class="card-label">Player 2</div><select id="sel-p2"></select></div><button class="btn btn-gold" onclick="startCustom()">🎮 Start Match</button></div>
   </div>
+
+  <!-- NEW PAIRS SCREEN -->
+  <div id="screen-pairs" class="screen">
+    <div class="hdr"><button class="btn btn-gray" onclick="go('home')" style="width:auto;padding:10px 16px;margin:0">← Back</button><div class="logo" style="font-size:17px">Pairs Event</div><div style="width:80px"></div></div>
+    <div class="content">
+      <p style="text-align:center; margin-bottom:15px; color:var(--muted); font-size:13px;">First to 69 Wins. Does not record to All-Time Stats.</p>
+      <div class="card" style="border-color: var(--gold)">
+        <div class="card-label" style="color:var(--gold)">Team 1</div>
+        <input type="text" id="p-t1-n1" placeholder="Player 1 Name">
+        <select id="p-t1-c1"></select>
+        <input type="text" id="p-t1-n2" placeholder="Player 2 Name" style="margin-top:10px">
+        <select id="p-t1-c2"></select>
+      </div>
+      <div class="card" style="border-color: var(--blue)">
+        <div class="card-label" style="color:var(--blue)">Team 2</div>
+        <input type="text" id="p-t2-n1" placeholder="Player 3 Name">
+        <select id="p-t2-c1"></select>
+        <input type="text" id="p-t2-n2" placeholder="Player 4 Name" style="margin-top:10px">
+        <select id="p-t2-c2"></select>
+      </div>
+      <button class="btn btn-gold" onclick="startPairs()">🎮 Start First to 69</button>
+    </div>
+  </div>
+
   <div id="screen-dart" class="screen">
     <div class="dart-hdr"><button class="dart-back" onclick="cancelDart()">←</button><div class="dart-step" id="dart-step">STEP 1 OF 2</div><div class="dart-name" id="dart-player">Player</div></div>
     <div class="dart-grid" id="dart-grid"></div>
@@ -388,7 +418,13 @@
           </div>
           <div class="d-section">
             <div class="d-section-title">🏆 Championship</div>
-            <select id="d-target" onchange="setTarget(this.value)" style="padding:8px;font-size:12px;margin-bottom:8px"><option value="11">First to 11</option><option value="15">First to 15</option><option value="21" selected>First to 21</option><option value="31">First to 31</option></select>
+            <select id="d-target" onchange="setTarget(this.value)" style="padding:8px;font-size:12px;margin-bottom:8px">
+              <option value="11">First to 11</option>
+              <option value="15">First to 15</option>
+              <option value="21" selected>First to 21</option>
+              <option value="31">First to 31</option>
+              <option value="69">First to 69 (Drop Double)</option>
+            </select>
             <button class="btn btn-gold" style="font-size:12px;padding:10px;margin-bottom:6px" onclick="genDraw()">🎲 Generate Draw</button>
             <button class="btn btn-red" style="font-size:12px;padding:8px;margin-bottom:6px" onclick="clearDraw()">Clear Championship</button>
             <button class="btn btn-blue" style="font-size:12px;padding:8px" id="d-demo-toggle" onclick="toggleDemo()">🧪 Demo: OFF</button>
@@ -460,6 +496,7 @@
 <script>
 const firebaseConfig={apiKey:"AIzaSyCRRQgDDqIvr0tBZDs2fzqSWNHDOxfbBNE",authDomain:"popdarts-f2157.firebaseapp.com",databaseURL:"https://popdarts-f2157-default-rtdb.firebaseio.com",projectId:"popdarts-f2157",storageBucket:"popdarts-f2157.firebasestorage.app",messagingSenderId:"886756771244",appId:"1:886756771244:web:d2e99b3f474944ba5aa609"};
 
+// ADDED WHITE DART
 const DARTS=[
   {id:'bg',grad:'linear-gradient(135deg,#1a1a1a 0%,#22c55e 50%,#1a1a1a 100%)',color:'#22c55e'},
   {id:'tr',grad:'linear-gradient(135deg,#f97316 0%,#0891b2 50%,#ec4899 100%)',color:'#f97316'},
@@ -468,10 +505,13 @@ const DARTS=[
   {id:'cy',grad:'linear-gradient(135deg,#06b6d4 0%,#0891b2 100%)',color:'#06b6d4'},
   {id:'wt',grad:'linear-gradient(135deg,#f0f0f0 0%,#14b8a6 50%,#f0f0f0 100%)',color:'#14b8a6'},
   {id:'li',grad:'linear-gradient(135deg,#84cc16 0%,#65a30d 100%)',color:'#84cc16'},
-  {id:'rd',grad:'linear-gradient(135deg,#ef4444 0%,#dc2626 100%)',color:'#ef4444'}
+  {id:'rd',grad:'linear-gradient(135deg,#ef4444 0%,#dc2626 100%)',color:'#ef4444'},
+  {id:'wh',grad:'linear-gradient(135deg,#ffffff 0%,#d4d4d8 50%,#ffffff 100%)',color:'#ffffff'}
 ];
 
-let db=null,DATA={players:[],draw:[],stats:[],history:[],target:21,live:null,demo:false},GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null},connected=false,inGame=false,isSaving=false,trophyAnim=null,deviceId=Math.random().toString(36).substr(2,9);
+let db=null,DATA={players:[],draw:[],stats:[],history:[],target:21,live:null,demo:false},
+    GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null,isPairs:false,target:21},
+    connected=false,inGame=false,isSaving=false,trophyAnim=null,deviceId=Math.random().toString(36).substr(2,9);
 let editingHistoryId=null;
 
 // ============================================================
@@ -512,17 +552,17 @@ function setupListeners(){
     DATA.live=s.val();
     if(DATA.live?.active&&inGame&&DATA.live.player1===GAME.p1&&DATA.live.player2===GAME.p2){
       GAME.s1=DATA.live.score1;GAME.s2=DATA.live.score2;updateGameUI();
-      if(!DATA.live.saved&&GAME.s1>=DATA.target&&!document.getElementById('win').classList.contains('on'))win(GAME.p1);
-      else if(!DATA.live.saved&&GAME.s2>=DATA.target&&!document.getElementById('win').classList.contains('on'))win(GAME.p2);
+      if(!DATA.live.saved&&GAME.s1>=GAME.target&&!document.getElementById('win').classList.contains('on'))win(GAME.p1);
+      else if(!DATA.live.saved&&GAME.s2>=GAME.target&&!document.getElementById('win').classList.contains('on'))win(GAME.p2);
     }
     if(DATA.live?.saved&&document.getElementById('win').classList.contains('on')&&!isSaving){
       document.getElementById('win').classList.remove('on');stopTrophyAnim();inGame=false;
-      GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null};
+      GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null,isPairs:false,target:DATA.target};
       if(window.innerWidth<1024)go('home');toast('Game saved by another device','ok');
     }
     if(prev?.active&&!DATA.live?.active){
       document.getElementById('win').classList.remove('on');stopTrophyAnim();
-      if(inGame){inGame=false;GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null};if(window.innerWidth<1024)go('home');}
+      if(inGame){inGame=false;GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null,isPairs:false,target:DATA.target};if(window.innerWidth<1024)go('home');}
     }
     render();
   });
@@ -538,7 +578,7 @@ function updateDemoUI(){
 // NAV
 // ============================================================
 document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>go(b.dataset.s));
-function go(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('screen-'+s)?.classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('on',b.dataset.s===s));document.getElementById('nav').style.display=['game','dart','custom'].includes(s)?'none':'flex';}
+function go(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('screen-'+s)?.classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('on',b.dataset.s===s));document.getElementById('nav').style.display=['game','dart','custom','pairs'].includes(s)?'none':'flex';}
 function switchTab(t,btn){document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');['draw','stand','all'].forEach(x=>{const el=document.getElementById('tab-'+x);if(el)el.style.display=x===t?'block':'none';});}
 function switchLeftTab(t,btn){btn.parentElement.querySelectorAll('.d-tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('d-left-draw').style.display=t==='draw'?'block':'none';document.getElementById('d-left-settings').style.display=t==='settings'?'block':'none';}
 function switchRightTab(t,btn){btn.parentElement.querySelectorAll('.d-tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('d-right-stand').style.display=t==='stand'?'block':'none';document.getElementById('d-right-alltime').style.display=t==='alltime'?'block':'none';}
@@ -600,9 +640,7 @@ function renderHistory(){
   const undoBtn=undoable.length?`<button class="btn btn-red" onclick="undoLast()" style="margin-bottom:8px;font-size:13px;padding:10px">↩ Undo Last Game</button>`:'';
   const html=DATA.history.slice(0,10).map(h=>historyRowHtml(h,false)).join('');
   if(mEl)mEl.innerHTML=undoBtn+(html||'<div class="empty" style="padding:16px">No games yet</div>');
-  // Refresh modal if open
-  const modal=document.getElementById('history-modal');
-  if(modal.classList.contains('on'))renderHistoryModal();
+  if(document.getElementById('history-modal').classList.contains('on'))renderHistoryModal();
 }
 
 function historyRowHtml(h,inModal){
@@ -624,25 +662,18 @@ function renderPlayers(){
 // DESKTOP RENDER
 // ============================================================
 function renderDesktop(){
-  // Player chips
   document.getElementById('d-player-chips').innerHTML=DATA.players.map(p=>`<span class="d-player-chip">${p}<button onclick="delPlayer('${p.replace(/'/g,"\\'")}')">×</button></span>`).join('')||'<span style="color:var(--muted);font-size:11px">No players added</span>';
-
-  // Left - draw list
   const n=getNext();
   const dLive=document.getElementById('d-live-zone');
   if(DATA.live?.active&&!inGame&&!DATA.live.saved){dLive.innerHTML=`<div class="d-live-card" onclick="joinLiveD()"><div class="live-badge" style="font-size:11px"><span class="live-pulse" style="width:8px;height:8px"></span>LIVE - Click to Join</div><div style="font-size:13px;font-weight:700">${DATA.live.player1} vs ${DATA.live.player2}</div><div style="font-size:24px;font-weight:900;color:var(--gold)">${DATA.live.score1} - ${DATA.live.score2}</div></div>`;}
   else if(dLive)dLive.innerHTML='';
 
   document.getElementById('d-draw-list').innerHTML=DATA.draw.length?DATA.draw.map((g,i)=>{const isNext=n&&n.idx===i;return`<div class="d-draw-row ${g.winner?'done':''} ${g.isGF?'gf':''} ${isNext?'next':''}" ${g.winner?'':`onclick="playIdxD(${i})"`}><div class="d-draw-num">${g.isGF?'🏆':g.num}</div><div class="d-draw-players">${g.p1} vs ${g.p2}</div><div class="d-draw-score">${g.winner?g.s1+'-'+g.s2:isNext?'▶':'—'}</div></div>`;}).join(''):'<div style="color:var(--muted);padding:12px;text-align:center;font-size:12px">Generate draw in Settings tab ↑</div>';
-
-  // Right - standings
+  
   const arr=calcStandings();
   document.getElementById('d-right-stand').innerHTML=arr.length?standingsTable(arr,'compact'):'<div style="color:var(--muted);padding:12px;text-align:center;font-size:12px">No games played yet</div>';
-
-  // Right - all-time
   document.getElementById('d-right-alltime').innerHTML=DATA.stats.length?allTimeTable(DATA.stats,'compact'):'<div style="color:var(--muted);padding:12px;text-align:center;font-size:12px">No stats yet</div>';
 
-  // Hero
   const hero=document.getElementById('d-hero');
   if(DATA.live?.active&&!inGame){hero.innerHTML='';}
   else if(!DATA.draw.length){hero.innerHTML=`<div class="hero-tag" style="color:var(--muted)">NO CHAMPIONSHIP</div><div class="hero-match">${DATA.players.length<2?'Add players':'Generate Draw'}</div>`;}
@@ -659,17 +690,10 @@ function renderDesktop(){
 function calcStandings(){
   const map={};DATA.players.forEach(p=>map[p]={name:p,w:0,l:0,pf:0,pa:0});
   DATA.draw.forEach(g=>{
-    if(!g.winner)return; // Removed the Grand Final check to include GF in For/Against
-    if(map[g.p1]){
-      if(g.winner===g.p1){map[g.p1].w++;map[g.p1].pf+=g.s1||0;map[g.p1].pa+=g.s2||0;}
-      else{map[g.p1].l++;map[g.p1].pf+=g.s1||0;map[g.p1].pa+=g.s2||0;}
-    }
-    if(map[g.p2]){
-      if(g.winner===g.p2){map[g.p2].w++;map[g.p2].pf+=g.s2||0;map[g.p2].pa+=g.s1||0;}
-      else{map[g.p2].l++;map[g.p2].pf+=g.s2||0;map[g.p2].pa+=g.s1||0;}
-    }
+    if(!g.winner)return;
+    if(map[g.p1]){if(g.winner===g.p1){map[g.p1].w++;map[g.p1].pf+=g.s1||0;map[g.p1].pa+=g.s2||0;}else{map[g.p1].l++;map[g.p1].pf+=g.s1||0;map[g.p1].pa+=g.s2||0;}}
+    if(map[g.p2]){if(g.winner===g.p2){map[g.p2].w++;map[g.p2].pf+=g.s2||0;map[g.p2].pa+=g.s1||0;}else{map[g.p2].l++;map[g.p2].pf+=g.s2||0;map[g.p2].pa+=g.s1||0;}}
   });
-  // Fixed sorting logic to correctly handle positive/negative differentials
   return Object.values(map).filter(p=>p.w+p.l>0).sort((a,b)=>b.w-a.w||((b.pf-b.pa)-(a.pf-a.pa)));
 }
 function standingsTable(arr,size){
@@ -682,106 +706,58 @@ function allTimeTable(stats,size){
 }
 
 // ============================================================
-// HISTORY MODAL
-// ============================================================
-function openHistoryModal(){
-  document.getElementById('history-modal').classList.add('on');
-  renderHistoryModal();
-}
-function closeHistoryModal(){document.getElementById('history-modal').classList.remove('on');}
-function renderHistoryModal(){
-  const el=document.getElementById('history-modal-list');
-  if(!DATA.history.length){el.innerHTML='<div class="empty">No history yet</div>';return;}
-  el.innerHTML=DATA.history.map(h=>historyRowHtml(h,true)).join('');
-}
-
-// ============================================================
 // HISTORY EDIT / UNDO / REDO
 // ============================================================
+function openHistoryModal(){document.getElementById('history-modal').classList.add('on');renderHistoryModal();}
+function closeHistoryModal(){document.getElementById('history-modal').classList.remove('on');}
+function renderHistoryModal(){const el=document.getElementById('history-modal-list');if(!DATA.history.length){el.innerHTML='<div class="empty">No history yet</div>';return;}el.innerHTML=DATA.history.map(h=>historyRowHtml(h,true)).join('');}
+
 function openEditModal(id){
-  editingHistoryId=id;
-  const h=DATA.history.find(x=>x.id===id);
-  if(!h)return;
-  const all=DATA.players;
-  const opts=all.map(p=>`<option value="${p}">${p}</option>`).join('');
+  editingHistoryId=id;const h=DATA.history.find(x=>x.id===id);if(!h)return;
+  const opts=DATA.players.map(p=>`<option value="${p}">${p}</option>`).join('');
   document.getElementById('edit-winner').innerHTML=opts;document.getElementById('edit-winner').value=h.winner;
   document.getElementById('edit-loser').innerHTML=opts;document.getElementById('edit-loser').value=h.loser;
-  document.getElementById('edit-wscore').value=h.winScore;
-  document.getElementById('edit-lscore').value=h.loseScore;
+  document.getElementById('edit-wscore').value=h.winScore;document.getElementById('edit-lscore').value=h.loseScore;
   document.getElementById('edit-modal').classList.add('on');
 }
 function closeEditModal(){document.getElementById('edit-modal').classList.remove('on');editingHistoryId=null;}
-
 async function confirmEdit(){
-  if(!editingHistoryId)return;
-  const h=DATA.history.find(x=>x.id===editingHistoryId);
-  if(!h){closeEditModal();return;}
-  const newWinner=document.getElementById('edit-winner').value;
-  const newLoser=document.getElementById('edit-loser').value;
-  const newWScore=parseInt(document.getElementById('edit-wscore').value)||0;
-  const newLScore=parseInt(document.getElementById('edit-lscore').value)||0;
+  if(!editingHistoryId)return;const h=DATA.history.find(x=>x.id===editingHistoryId);if(!h){closeEditModal();return;}
+  const newWinner=document.getElementById('edit-winner').value,newLoser=document.getElementById('edit-loser').value;
+  const newWScore=parseInt(document.getElementById('edit-wscore').value)||0,newLScore=parseInt(document.getElementById('edit-lscore').value)||0;
   if(newWinner===newLoser){toast('Winner and loser must differ','err');return;}
-
-  // Reverse old stats (if not demo)
-  if(!h.demo){
-    await reverseStatsEntry(h.winner,h.loser,h.winScore,h.loseScore,h.isGF);
-    // Apply new stats
-    await updateStats(newWinner,newLoser,newWScore,newLScore,h.isGF?1:0);
-  }
-  // Update draw if part of championship
-  if(h.isChamp&&h.drawKey){
-    await db.ref('draw/'+h.drawKey).update({s1:newWScore,s2:newLScore,winner:newWinner});
-  }
-  // Update history record
+  if(!h.demo){await reverseStatsEntry(h.winner,h.loser,h.winScore,h.loseScore,h.isGF);await updateStats(newWinner,newLoser,newWScore,newLScore,h.isGF?1:0);}
+  if(h.isChamp&&h.drawKey)await db.ref('draw/'+h.drawKey).update({s1:newWScore,s2:newLScore,winner:newWinner});
   await db.ref('history/'+editingHistoryId).update({winner:newWinner,loser:newLoser,winScore:newWScore,loseScore:newLScore,player1:newWinner,player2:newLoser,score1:newWScore,score2:newLScore,editedAt:Date.now()});
-  closeEditModal();
-  toast('Result updated!','ok');
+  closeEditModal();toast('Result updated!','ok');
 }
-
 async function undoHistoryEntry(id){
-  const h=DATA.history.find(x=>x.id===id);
-  if(!h||h.undone)return;
+  const h=DATA.history.find(x=>x.id===id);if(!h||h.undone)return;
   if(!confirm(`Undo: ${h.winner} def ${h.loser} (${h.winScore}-${h.loseScore})?`))return;
   if(!h.demo)await reverseStatsEntry(h.winner,h.loser,h.winScore,h.loseScore,h.isGF);
   if(h.isChamp&&h.drawKey)await db.ref('draw/'+h.drawKey).update({s1:null,s2:null,winner:null});
   if(h.isGF)await db.ref('draw/gf').remove();
-  await db.ref('history/'+id).update({undone:true});
-  toast('Game undone!','ok');
+  await db.ref('history/'+id).update({undone:true});toast('Game undone!','ok');
 }
-
 async function redoHistory(id){
-  const h=DATA.history.find(x=>x.id===id);
-  if(!h||!h.undone)return;
+  const h=DATA.history.find(x=>x.id===id);if(!h||!h.undone)return;
   if(!confirm(`Redo: ${h.winner} def ${h.loser} (${h.winScore}-${h.loseScore})?`))return;
   if(!h.demo)await updateStats(h.winner,h.loser,h.winScore,h.loseScore,h.isGF?1:0);
   if(h.isChamp&&h.drawKey)await db.ref('draw/'+h.drawKey).update({s1:h.winScore,s2:h.loseScore,winner:h.winner});
-  await db.ref('history/'+id).update({undone:false});
-  toast('Game redone!','ok');
+  await db.ref('history/'+id).update({undone:false});toast('Game redone!','ok');
 }
-
-async function undoLast(){
-  const undoable=DATA.history.filter(h=>!h.undone);
-  if(!undoable.length){toast('Nothing to undo','err');return;}
-  await undoHistoryEntry(undoable[0].id);
+async function undoLast(){const undoable=DATA.history.filter(h=>!h.undone);if(!undoable.length){toast('Nothing to undo','err');return;}await undoHistoryEntry(undoable[0].id);}
+async function reverseStatsEntry(w,l,ws,ls,isGF){
+  if(!w||!l||w==='null'||l==='null')return;
+  const wS=await db.ref('stats/'+w).once('value'),lS=await db.ref('stats/'+l).once('value');
+  const wD=wS.val(),lD=lS.val();
+  if(wD)await db.ref('stats/'+w).set({gp:Math.max(0,(wD.gp||0)-1),wins:Math.max(0,(wD.wins||0)-1),losses:wD.losses||0,pf:Math.max(0,(wD.pf||0)-ws),pa:Math.max(0,(wD.pa||0)-ls),champs:Math.max(0,(wD.champs||0)-(isGF?1:0))});
+  if(lD)await db.ref('stats/'+l).set({gp:Math.max(0,(lD.gp||0)-1),wins:lD.wins||0,losses:Math.max(0,(lD.losses||0)-1),pf:Math.max(0,(lD.pf||0)-ls),pa:Math.max(0,(lD.pa||0)-ws),champs:lD.champs||0});
 }
-
-async function reverseStatsEntry(winner,loser,winScore,loseScore,isGF){
-  if(!winner||!loser||winner==='null'||loser==='null')return;
-  const wSnap=await db.ref('stats/'+winner).once('value'),lSnap=await db.ref('stats/'+loser).once('value');
-  const ws=wSnap.val(),ls=lSnap.val();
-  if(ws)await db.ref('stats/'+winner).set({gp:Math.max(0,(ws.gp||0)-1),wins:Math.max(0,(ws.wins||0)-1),losses:ws.losses||0,pf:Math.max(0,(ws.pf||0)-winScore),pa:Math.max(0,(ws.pa||0)-loseScore),champs:Math.max(0,(ws.champs||0)-(isGF?1:0))});
-  if(ls)await db.ref('stats/'+loser).set({gp:Math.max(0,(ls.gp||0)-1),wins:ls.wins||0,losses:Math.max(0,(ls.losses||0)-1),pf:Math.max(0,(ls.pf||0)-loseScore),pa:Math.max(0,(ls.pa||0)-winScore),champs:ls.champs||0});
-}
-
-// ============================================================
-// SNAPSHOT
-// ============================================================
 async function saveSnapshot(){
-  const name=prompt('Snapshot name (e.g. "Start of Season 3"):');
-  if(!name||!name.trim())return;
-  const snap={name:name.trim(),timestamp:Date.now(),players:[...DATA.players],stats:DATA.stats.reduce((a,s)=>{a[s.name]={...s};return a;},{}),note:'Saved from PopDarts v9.0'};
-  await db.ref('snapshots').push().set(snap);
-  toast('Snapshot saved: '+name.trim(),'ok');
+  const name=prompt('Snapshot name:');if(!name||!name.trim())return;
+  const snap={name:name.trim(),timestamp:Date.now(),players:[...DATA.players],stats:DATA.stats.reduce((a,s)=>{a[s.name]={...s};return a;},{}),note:'Saved from PopDarts'};
+  await db.ref('snapshots').push().set(snap);toast('Snapshot saved!','ok');
 }
 
 // ============================================================
@@ -794,18 +770,18 @@ function updateDesktopGameUI(){
   document.getElementById('d-sc1').textContent=GAME.s1;document.getElementById('d-sc2').textContent=GAME.s2;
   document.getElementById('d-dart1').style.background=GAME.d1?.grad||DARTS[0].grad;
   document.getElementById('d-dart2').style.background=GAME.d2?.grad||DARTS[2].grad;
-  const p1pct=Math.min(100,(GAME.s1/DATA.target)*100),p2pct=Math.min(100,(GAME.s2/DATA.target)*100);
+  const p1pct=Math.min(100,(GAME.s1/GAME.target)*100),p2pct=Math.min(100,(GAME.s2/GAME.target)*100);
   document.getElementById('d-bar1').style.width=p1pct+'%';document.getElementById('d-bar1').style.background=GAME.d1?.grad||DARTS[0].grad;
   document.getElementById('d-bar2').style.width=p2pct+'%';document.getElementById('d-bar2').style.background=GAME.d2?.grad||DARTS[2].grad;
   const lbl=document.getElementById('d-label');
-  if(GAME.isGF){lbl.textContent='🏆 GF';lbl.className='badge gf';}else if(GAME.isChamp){lbl.textContent='Game '+GAME.num;lbl.className='badge';}else{lbl.textContent='Quick';lbl.className='badge';}
+  if(GAME.isPairs){lbl.textContent='Pairs 69';lbl.className='badge demo';}else if(GAME.isGF){lbl.textContent='🏆 GF';lbl.className='badge gf';}else if(GAME.isChamp){lbl.textContent='Game '+GAME.num;lbl.className='badge';}else{lbl.textContent='Quick';lbl.className='badge';}
   document.getElementById('d-demo').style.display=DATA.demo?'inline-block':'none';
 }
 
 function updateGameUI(){
   const sc1=document.getElementById('sc1'),sc2=document.getElementById('sc2');
   if(sc1)sc1.textContent=GAME.s1;if(sc2)sc2.textContent=GAME.s2;
-  const p1pct=Math.min(100,(GAME.s1/DATA.target)*100),p2pct=Math.min(100,(GAME.s2/DATA.target)*100);
+  const p1pct=Math.min(100,(GAME.s1/GAME.target)*100),p2pct=Math.min(100,(GAME.s2/GAME.target)*100);
   const bar1=document.getElementById('bar1'),bar2=document.getElementById('bar2');
   if(bar1&&GAME.d1){bar1.style.width=p1pct+'%';bar1.style.background=GAME.d1.grad;}
   if(bar2&&GAME.d2){bar2.style.width=p2pct+'%';bar2.style.background=GAME.d2.grad;}
@@ -813,21 +789,15 @@ function updateGameUI(){
 }
 
 function resetScores(){if(!confirm('Reset to 0-0?'))return;GAME.s1=0;GAME.s2=0;updateGameUI();pushScore();}
-
 function openMenu(){document.getElementById('gmenu').classList.add('on');}
 function closeMenu(){document.getElementById('gmenu').classList.remove('on');}
 function goHome(){closeMenu();inGame=false;if(window.innerWidth<1024)go('home');render();}
 function endGame(){
   if(!confirm('Exit without saving?'))return;
-  closeMenu();
-  const wasInGame=inGame;
-  inGame=false;
-  GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null};
-  db.ref('live').remove();
-  document.getElementById('win').classList.remove('on');
-  stopTrophyAnim();
-  if(window.innerWidth>=1024)render();
-  else go('home');
+  closeMenu();inGame=false;
+  GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null,isPairs:false,target:DATA.target};
+  db.ref('live').remove();document.getElementById('win').classList.remove('on');stopTrophyAnim();
+  if(window.innerWidth>=1024)render();else go('home');
 }
 
 function win(name){
@@ -841,54 +811,35 @@ function win(name){
 async function saveGame(){
   const saveBtn=document.getElementById('save-btn');
   if(saveBtn.disabled||isSaving)return;
-  saveBtn.disabled=true;
-  isSaving=true;
+  saveBtn.disabled=true;isSaving=true;
 
-  const G={
-    p1:GAME.p1, p2:GAME.p2,
-    s1:GAME.s1, s2:GAME.s2,
-    isChamp:GAME.isChamp, isGF:GAME.isGF,
-    num:GAME.num, drawKey:GAME.drawKey
-  };
-
-  const winner=G.s1>G.s2?G.p1:G.p2;
-  const loser=winner===G.p1?G.p2:G.p1;
-  const winScore=winner===G.p1?G.s1:G.s2;
-  const loseScore=winner===G.p1?G.s2:G.s1;
+  const G={...GAME};
+  const winner=G.s1>G.s2?G.p1:G.p2, loser=winner===G.p1?G.p2:G.p1, winScore=winner===G.p1?G.s1:G.s2, loseScore=winner===G.p1?G.s2:G.s1;
 
   if(!winner||!loser||winner==='null'||loser==='null'){
-    toast('Game data missing – try again','err');
-    saveBtn.disabled=false;isSaving=false;return;
+    toast('Game data missing – try again','err');saveBtn.disabled=false;isSaving=false;return;
   }
 
-  const isDemo=DATA.live?.demo||DATA.demo;
+  // Treat pairs game as demo effectively to avoid writing to stats DB.
+  const isDemo = DATA.live?.demo || DATA.demo || G.isPairs;
   const gameId=DATA.live?.gameId||Date.now()+'-'+deviceId;
 
   try{
     const liveSnap=await db.ref('live/saved').once('value');
     if(liveSnap.val()===true){toast('Already saved','err');saveBtn.disabled=false;isSaving=false;return;}
     await db.ref('live/saved').set(true);
-
     await db.ref('history').push().set({timestamp:Date.now(),player1:G.p1,player2:G.p2,score1:G.s1,score2:G.s2,winner,loser,winScore,loseScore,isChamp:G.isChamp,isGF:G.isGF,gameNum:G.num,drawKey:G.drawKey,undone:false,demo:isDemo,gameId,savedBy:deviceId});
     if(G.isChamp&&G.drawKey)await db.ref('draw/'+G.drawKey).update({s1:G.s1,s2:G.s2,winner});
     if(!isDemo)await updateStats(winner,loser,winScore,loseScore,G.isGF?1:0);
     if(G.isChamp&&!G.isGF)await checkGrandFinal();
-    toast(isDemo?'Demo saved!':(G.isGF?'🏆 Champion!':'Saved!'),'ok');
+    toast(G.isPairs?'Pairs Match Saved!':(isDemo?'Demo saved!':(G.isGF?'🏆 Champion!':'Saved!')),'ok');
   }catch(e){toast('Save error: '+e.message,'err');saveBtn.disabled=false;isSaving=false;return;}
 
   setTimeout(()=>db.ref('live').remove(),500);
   stopTrophyAnim();inGame=false;isSaving=false;
-  GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null};
+  GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null,isPairs:false,target:DATA.target};
   document.getElementById('win').classList.remove('on');
   if(window.innerWidth>=1024)render();else go('home');
-}
-
-async function updateStats(winner,loser,winScore,loseScore,champAdd){
-  if(!winner||!loser||winner==='null'||loser==='null')return;
-  const wSnap=await db.ref('stats/'+winner).once('value'),lSnap=await db.ref('stats/'+loser).once('value');
-  const ws=wSnap.val()||{gp:0,wins:0,losses:0,pf:0,pa:0,champs:0},ls=lSnap.val()||{gp:0,wins:0,losses:0,pf:0,pa:0,champs:0};
-  await db.ref('stats/'+winner).set({gp:(ws.gp||0)+1,wins:(ws.wins||0)+1,losses:ws.losses||0,pf:(ws.pf||0)+winScore,pa:(ws.pa||0)+loseScore,champs:(ws.champs||0)+champAdd});
-  await db.ref('stats/'+loser).set({gp:(ls.gp||0)+1,wins:ls.wins||0,losses:(ls.losses||0)+1,pf:(ls.pf||0)+loseScore,pa:(ls.pa||0)+winScore,champs:ls.champs||0});
 }
 
 async function checkGrandFinal(){
@@ -904,7 +855,7 @@ async function checkGrandFinal(){
 function rematch(){document.getElementById('win').classList.remove('on');stopTrophyAnim();GAME.s1=0;GAME.s2=0;db.ref('live').update({saved:false,score1:0,score2:0});updateGameUI();}
 
 // ============================================================
-// PLAYERS
+// PLAYERS / DRAW / UTILS
 // ============================================================
 async function addPlayer(){const inp=document.getElementById('inp-player'),name=inp.value.trim();if(!name)return;hideDropdowns();if(DATA.players.includes(name)){toast('Already in roster','err');return;}await db.ref('players/'+name).set(true);inp.value='';toast('Added!','ok');}
 async function addPlayerD(){const inp=document.getElementById('d-inp-player'),name=inp.value.trim();if(!name)return;hideDropdowns();if(DATA.players.includes(name)){toast('Already in roster','err');return;}await db.ref('players/'+name).set(true);inp.value='';toast('Added!','ok');}
@@ -916,9 +867,6 @@ document.addEventListener('click',e=>{if(!e.target.closest('#inp-player')&&!e.ta
 document.getElementById('inp-player')?.addEventListener('keypress',e=>{if(e.key==='Enter'){addPlayer();hideDropdowns();}});
 document.getElementById('d-inp-player')?.addEventListener('keypress',e=>{if(e.key==='Enter'){addPlayerD();hideDropdowns();}});
 
-// ============================================================
-// DRAW / CHAMPIONSHIP
-// ============================================================
 async function genDraw(){
   if(DATA.players.length<2){toast('Need 2+ players','err');return;}
   if(DATA.draw.length&&!confirm('Replace championship?'))return;
@@ -934,14 +882,48 @@ function setTarget(val){db.ref('config/target').set(parseInt(val)||21);}
 function toggleDemo(){const newVal=!DATA.demo;db.ref('config/demo').set(newVal);toast(newVal?'Demo ON - stats paused':'Demo OFF','ok');}
 
 // ============================================================
-// PLAY GAME
+// MATCH LAUNCHERS
 // ============================================================
 function playNext(){const n=getNext();if(!n){toast(DATA.draw.length?'All done!':'Generate draw first','err');return;}playIdx(n.idx);}
-function playIdx(i){const g=DATA.draw[i];if(!g||g.winner)return;GAME={p1:g.p1,p2:g.p2,s1:0,s2:0,d1:null,d2:null,idx:i,num:g.num,isChamp:true,isGF:g.isGF,drawKey:g.key};openDart(1,g.p1);}
-function playIdxD(i){const g=DATA.draw[i];if(!g||g.winner)return;GAME={p1:g.p1,p2:g.p2,s1:0,s2:0,d1:null,d2:null,idx:i,num:g.num,isChamp:true,isGF:g.isGF,drawKey:g.key};openDartD(1,g.p1);}
-function cancelDart(){GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null};go('home');}
+function playIdx(i){const g=DATA.draw[i];if(!g||g.winner)return;GAME={p1:g.p1,p2:g.p2,s1:0,s2:0,d1:null,d2:null,idx:i,num:g.num,isChamp:true,isGF:g.isGF,drawKey:g.key,isPairs:false,target:DATA.target};openDart(1,g.p1);}
+function playIdxD(i){const g=DATA.draw[i];if(!g||g.winner)return;GAME={p1:g.p1,p2:g.p2,s1:0,s2:0,d1:null,d2:null,idx:i,num:g.num,isChamp:true,isGF:g.isGF,drawKey:g.key,isPairs:false,target:DATA.target};openDartD(1,g.p1);}
+function cancelDart(){GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null,isPairs:false,target:DATA.target};go('home');}
 function openCustom(){if(DATA.players.length<2){toast('Add 2+ players','err');return;}document.getElementById('sel-p1').innerHTML=DATA.players.map(p=>`<option>${p}</option>`).join('');document.getElementById('sel-p2').innerHTML=DATA.players.map(p=>`<option>${p}</option>`).join('');if(DATA.players.length>1)document.getElementById('sel-p2').selectedIndex=1;go('custom');}
-function startCustom(){const p1=document.getElementById('sel-p1').value,p2=document.getElementById('sel-p2').value;if(p1===p2){toast('Pick different players','err');return;}GAME={p1,p2,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null};openDart(1,p1);}
+function startCustom(){const p1=document.getElementById('sel-p1').value,p2=document.getElementById('sel-p2').value;if(p1===p2){toast('Pick different players','err');return;}GAME={p1,p2,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null,isPairs:false,target:DATA.target};openDart(1,p1);}
+
+// PAIRS EVENTS LAUNCHERS
+function openPairs(){
+  const opts = DARTS.map(d => `<option value="${d.id}">${d.id.toUpperCase()} Dart Color</option>`).join('');
+  ['p-t1-c1','p-t1-c2','p-t2-c1','p-t2-c2'].forEach(id=>document.getElementById(id).innerHTML=opts);
+  document.getElementById('p-t1-c1').selectedIndex=0; document.getElementById('p-t1-c2').selectedIndex=1;
+  document.getElementById('p-t2-c1').selectedIndex=2; document.getElementById('p-t2-c2').selectedIndex=3;
+  go('pairs');
+}
+function startPairs(){
+  const t1n1=document.getElementById('p-t1-n1').value||'P1', t1n2=document.getElementById('p-t1-n2').value||'P2';
+  const t2n1=document.getElementById('p-t2-n1').value||'P3', t2n2=document.getElementById('p-t2-n2').value||'P4';
+  const t1c1=DARTS.find(d=>d.id===document.getElementById('p-t1-c1').value);
+  const t1c2=DARTS.find(d=>d.id===document.getElementById('p-t1-c2').value);
+  const t2c1=DARTS.find(d=>d.id===document.getElementById('p-t2-c1').value);
+  const t2c2=DARTS.find(d=>d.id===document.getElementById('p-t2-c2').value);
+  
+  GAME={
+    p1:`${t1n1} & ${t1n2}`, p2:`${t2n1} & ${t2n2}`, s1:0, s2:0,
+    d1:{id:'t1', grad:`linear-gradient(90deg, ${t1c1.color} 0%, ${t1c2.color} 100%)`, color:'#fff'},
+    d2:{id:'t2', grad:`linear-gradient(90deg, ${t2c1.color} 0%, ${t2c2.color} 100%)`, color:'#fff'},
+    idx:-1, num:null, isChamp:false, isGF:false, drawKey:null,
+    isPairs:true, target:69
+  };
+  
+  inGame=true;
+  db.ref('live').set({
+    active:true, player1:GAME.p1, player2:GAME.p2, score1:0, score2:0,
+    color1:t1c1.id, color2:t2c1.id, target:69, isChamp:false, isGF:false,
+    gameNum:null, drawKey:null, demo:true, isPairs:true, saved:false,
+    gameId:Date.now()+'-'+deviceId, pGrad1:GAME.d1.grad, pGrad2:GAME.d2.grad
+  });
+  setupGameUI(); go('game');
+}
 
 function openDart(step,name){GAME.step=step;GAME.pick=null;document.getElementById('dart-step').textContent='STEP '+step+' OF 2';document.getElementById('dart-player').textContent=name;document.getElementById('dart-confirm').disabled=true;document.getElementById('dart-grid').innerHTML=DARTS.map(d=>{const off=step===2&&GAME.d1?.id===d.id;return`<div class="dart-opt ${off?'off':''}" data-id="${d.id}" onclick="pickDart('${d.id}')"><div class="dart-circle" style="background:${d.grad}"></div></div>`;}).join('');go('dart');}
 function pickDart(id){GAME.pick=DARTS.find(d=>d.id===id);document.querySelectorAll('.dart-opt').forEach(el=>el.classList.toggle('picked',el.dataset.id===id));document.getElementById('dart-confirm').disabled=false;}
@@ -952,26 +934,56 @@ function confirmDartD(){if(!GAME.pick)return;if(GAME.step===1){GAME.d1=GAME.pick
 
 function startGame(isDesktop){
   GAME.s1=0;GAME.s2=0;inGame=true;
-  db.ref('live').set({active:true,player1:GAME.p1,player2:GAME.p2,score1:0,score2:0,color1:GAME.d1.id,color2:GAME.d2.id,target:DATA.target,isChamp:GAME.isChamp,isGF:GAME.isGF,gameNum:GAME.num,drawKey:GAME.drawKey,demo:DATA.demo,saved:false,gameId:Date.now()+'-'+deviceId});
+  db.ref('live').set({active:true,player1:GAME.p1,player2:GAME.p2,score1:0,score2:0,color1:GAME.d1.id,color2:GAME.d2.id,target:DATA.target,isChamp:GAME.isChamp,isGF:GAME.isGF,gameNum:GAME.num,drawKey:GAME.drawKey,demo:DATA.demo,isPairs:false,saved:false,gameId:Date.now()+'-'+deviceId});
   if(!isDesktop){setupGameUI();go('game');}else render();
 }
 
-function joinLive(){if(!DATA.live?.active||DATA.live.saved)return;GAME={p1:DATA.live.player1,p2:DATA.live.player2,s1:DATA.live.score1,s2:DATA.live.score2,d1:DARTS.find(d=>d.id===DATA.live.color1)||DARTS[0],d2:DARTS.find(d=>d.id===DATA.live.color2)||DARTS[2],idx:-1,num:DATA.live.gameNum,isChamp:DATA.live.isChamp,isGF:DATA.live.isGF,drawKey:DATA.live.drawKey};inGame=true;setupGameUI();go('game');}
-function joinLiveD(){if(!DATA.live?.active||DATA.live.saved)return;GAME={p1:DATA.live.player1,p2:DATA.live.player2,s1:DATA.live.score1,s2:DATA.live.score2,d1:DARTS.find(d=>d.id===DATA.live.color1)||DARTS[0],d2:DARTS.find(d=>d.id===DATA.live.color2)||DARTS[2],idx:-1,num:DATA.live.gameNum,isChamp:DATA.live.isChamp,isGF:DATA.live.isGF,drawKey:DATA.live.drawKey};inGame=true;render();}
+function joinLive(){
+  if(!DATA.live?.active||DATA.live.saved)return;
+  GAME={
+    p1:DATA.live.player1, p2:DATA.live.player2, s1:DATA.live.score1, s2:DATA.live.score2,
+    idx:-1, num:DATA.live.gameNum, isChamp:DATA.live.isChamp, isGF:DATA.live.isGF, drawKey:DATA.live.drawKey,
+    isPairs:DATA.live.isPairs||false, target:DATA.live.target||DATA.target
+  };
+  if(GAME.isPairs){
+    GAME.d1={id:'t1', grad:DATA.live.pGrad1, color:'#fff'};
+    GAME.d2={id:'t2', grad:DATA.live.pGrad2, color:'#fff'};
+  } else {
+    GAME.d1=DARTS.find(d=>d.id===DATA.live.color1)||DARTS[0];
+    GAME.d2=DARTS.find(d=>d.id===DATA.live.color2)||DARTS[2];
+  }
+  inGame=true;setupGameUI();go('game');
+}
+function joinLiveD(){
+  if(!DATA.live?.active||DATA.live.saved)return;
+  GAME={
+    p1:DATA.live.player1, p2:DATA.live.player2, s1:DATA.live.score1, s2:DATA.live.score2,
+    idx:-1, num:DATA.live.gameNum, isChamp:DATA.live.isChamp, isGF:DATA.live.isGF, drawKey:DATA.live.drawKey,
+    isPairs:DATA.live.isPairs||false, target:DATA.live.target||DATA.target
+  };
+  if(GAME.isPairs){
+    GAME.d1={id:'t1', grad:DATA.live.pGrad1, color:'#fff'};
+    GAME.d2={id:'t2', grad:DATA.live.pGrad2, color:'#fff'};
+  } else {
+    GAME.d1=DARTS.find(d=>d.id===DATA.live.color1)||DARTS[0];
+    GAME.d2=DARTS.find(d=>d.id===DATA.live.color2)||DARTS[2];
+  }
+  inGame=true;render();
+}
 
 function setupGameUI(){
   document.getElementById('name1').textContent=GAME.p1;document.getElementById('name2').textContent=GAME.p2;
   document.getElementById('dart1').style.background=GAME.d1.grad;document.getElementById('dart2').style.background=GAME.d2.grad;
   const lbl=document.getElementById('g-label');
-  if(GAME.isGF){lbl.textContent='🏆 GF';lbl.className='badge gf';}else if(GAME.isChamp){lbl.textContent='Game '+GAME.num;lbl.className='badge';}else{lbl.textContent='Quick';lbl.className='badge';}
+  if(GAME.isPairs){lbl.textContent='Pairs 69';lbl.className='badge demo';}else if(GAME.isGF){lbl.textContent='🏆 GF';lbl.className='badge gf';}else if(GAME.isChamp){lbl.textContent='Game '+GAME.num;lbl.className='badge';}else{lbl.textContent='Quick';lbl.className='badge';}
   document.getElementById('g-demo').style.display=DATA.demo?'inline-block':'none';
   updateGameUI();
 }
 
 function adj(p,amt){
   if(!inGame||DATA.live?.saved)return;
-  if(p===1){GAME.s1=Math.max(0,GAME.s1+amt);if(GAME.s1>=DATA.target){GAME.s1=DATA.target;pushScore();return;}}
-  else{GAME.s2=Math.max(0,GAME.s2+amt);if(GAME.s2>=DATA.target){GAME.s2=DATA.target;pushScore();return;}}
+  if(p===1){GAME.s1=Math.max(0,GAME.s1+amt);if(GAME.s1>=GAME.target){GAME.s1=GAME.target;pushScore();return;}}
+  else{GAME.s2=Math.max(0,GAME.s2+amt);if(GAME.s2>=GAME.target){GAME.s2=GAME.target;pushScore();return;}}
   updateGameUI();pushScore();
 }
 function pushScore(){db.ref('live').update({score1:GAME.s1,score2:GAME.s2});}
