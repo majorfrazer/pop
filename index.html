@@ -1,3 +1,10 @@
+Here is the complete, fully updated code.
+
+It includes the **Demo Banner**, the **`updateStats` missing function fix**, the **Grand Final race condition fix**, and completely revamps **2v2 Pairs to default to 21** instead of 69 (while also cleaning up the UI text to just say "2v2 Quick Match").
+
+Copy this entire block and replace your existing code:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -198,6 +205,32 @@
     .edit-btn{flex:1;padding:12px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
     .edit-btn.confirm{background:var(--green);color:#000}
     .edit-btn.cancel{background:var(--elev);color:var(--muted);border:1px solid var(--border)}
+    /* Demo Banner Styles */
+    .demo-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--blue);
+      color: #fff;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: calc(6px + var(--st)) 10px 6px;
+      z-index: 99999;
+      display: none;
+    }
+    body.demo-active .demo-banner {
+      display: block;
+    }
+    body.demo-active .screen {
+      top: calc(26px + var(--st));
+    }
+    body.demo-active .desktop-view {
+      height: calc(100vh - 26px - var(--st)) !important;
+      margin-top: calc(26px + var(--st));
+    }
     /* DESKTOP LAYOUT */
     @media(min-width:1024px){
       .mobile-view{display:none!important}
@@ -260,6 +293,7 @@
   </style>
 </head>
 <body>
+<div class="demo-banner">🧪 DEMO MODE ACTIVE - STATS NOT SAVED 🧪</div>
 <div class="setup" id="setup"><div class="setup-logo">🎯</div><div class="setup-title">PopDarts</div><div class="setup-sub">Real-time multiplayer scoring</div><div class="setup-spin"></div></div>
 
 <div class="install-banner" id="install-banner">
@@ -275,10 +309,10 @@
       <div id="hero-zone"></div>
       <div class="actions">
         <div class="act gold" onclick="playNext()"><div class="act-icon">▶️</div><div class="act-text">Play Next</div></div>
-        <div class="act" onclick="openCustom()"><div class="act-icon">🎮</div><div class="act-text">Quick Match</div></div>
+        <div class="act" onclick="openCustom()"><div class="act-icon">🎮</div><div class="act-text">1v1 Quick Match</div></div>
         <div class="act" onclick="openPairs()" style="grid-column: span 2; border: 2px solid var(--gold); background: rgba(255, 193, 7, 0.1); display:flex; align-items:center; justify-content:center; gap:10px; padding: 12px;">
            <div class="act-icon" style="margin:0;">👯</div>
-           <div class="act-text" style="font-size:14px; color:var(--gold)">Drop Double Pairs (2v2)</div>
+           <div class="act-text" style="font-size:14px; color:var(--gold)">2v2 Quick Match</div>
         </div>
       </div>
       <div class="stats-row">
@@ -328,15 +362,14 @@
   </div>
 
   <div id="screen-custom" class="screen">
-    <div class="hdr"><button class="btn btn-gray" onclick="go('home')" style="width:auto;padding:10px 16px;margin:0">← Back</button><div class="logo" style="font-size:17px">Quick Match</div><div style="width:80px"></div></div>
+    <div class="hdr"><button class="btn btn-gray" onclick="go('home')" style="width:auto;padding:10px 16px;margin:0">← Back</button><div class="logo" style="font-size:17px">1v1 Quick</div><div style="width:80px"></div></div>
     <div class="content"><div class="card"><div class="card-label">Player 1</div><select id="sel-p1"></select></div><div class="card"><div class="card-label">Player 2</div><select id="sel-p2"></select></div><button class="btn btn-gold" onclick="startCustom(false)">🎮 Start Match</button></div>
   </div>
 
-  <!-- MOBILE PAIRS SCREEN -->
   <div id="screen-pairs" class="screen">
-    <div class="hdr"><button class="btn btn-gray" onclick="go('home')" style="width:auto;padding:10px 16px;margin:0">← Back</button><div class="logo" style="font-size:17px">Pairs Event</div><div style="width:80px"></div></div>
+    <div class="hdr"><button class="btn btn-gray" onclick="go('home')" style="width:auto;padding:10px 16px;margin:0">← Back</button><div class="logo" style="font-size:17px">2v2 Quick Match</div><div style="width:80px"></div></div>
     <div class="content">
-      <p style="text-align:center; margin-bottom:15px; color:var(--muted); font-size:13px;">First to 69 Wins. Does not record to All-Time Stats.</p>
+      <p style="text-align:center; margin-bottom:15px; color:var(--muted); font-size:13px;">Does not record to All-Time Stats.</p>
       <div class="card" style="border-color: var(--gold)">
         <div class="card-label" style="color:var(--gold)">Team 1</div>
         <input type="text" id="p-t1-n1" placeholder="Player 1 Name">
@@ -351,7 +384,7 @@
         <input type="text" id="p-t2-n2" placeholder="Player 4 Name" style="margin-top:10px">
         <select id="p-t2-c2"></select>
       </div>
-      <button class="btn btn-gold" onclick="startPairs(false)">🎮 Start First to 69</button>
+      <button class="btn btn-gold" onclick="startPairs(false)">🎮 Start 2v2 Match</button>
     </div>
   </div>
 
@@ -465,10 +498,9 @@
 <div class="win" id="win"><div class="win-trophy" id="win-trophy">🏆</div><div class="win-content"><div class="win-tag">🎉 WINNER 🎉</div><div class="win-name" id="win-name">Player</div><div class="win-score" id="win-score">21 - 15</div><div class="win-btns"><button class="win-btn save" id="save-btn" onclick="saveGame()">💾 Save &amp; Exit</button><button class="win-btn again" onclick="rematch()">🔄 Rematch</button></div></div></div>
 <div class="dart-modal" id="dart-modal"><div class="dart-modal-title" id="dm-step">STEP 1 OF 2</div><div class="dart-modal-player" id="dm-player">Player</div><div class="dart-modal-grid" id="dm-grid"></div><button class="dart-modal-btn" id="dm-confirm" onclick="confirmDartD()" disabled>Select Dart</button></div>
 
-<!-- DESKTOP 1V1 QUICK MODAL -->
 <div class="edit-modal" id="d-custom-modal" onclick="if(event.target===this)this.classList.remove('on')">
   <div class="edit-box" style="max-width: 400px; text-align:center;">
-    <h3 style="margin-bottom:15px;">🎮 Quick Match</h3>
+    <h3 style="margin-bottom:15px;">🎮 1v1 Quick Match</h3>
     <div class="edit-row">
        <select id="d-sel-p1" class="edit-input"></select>
        <select id="d-sel-p2" class="edit-input"></select>
@@ -480,11 +512,10 @@
   </div>
 </div>
 
-<!-- DESKTOP PAIRS MODAL -->
 <div class="edit-modal" id="d-pairs-modal" onclick="if(event.target===this)this.classList.remove('on')">
   <div class="edit-box" style="max-width: 500px;">
-    <h3 style="text-align:center; font-size: 20px;">👯 Drop Double Pairs (2v2)</h3>
-    <p style="text-align:center; color:var(--muted); font-size:12px; margin-bottom:15px;">First to 69 Wins. No All-Time Stats recorded.</p>
+    <h3 style="text-align:center; font-size: 20px;">👯 2v2 Quick Match</h3>
+    <p style="text-align:center; color:var(--muted); font-size:12px; margin-bottom:15px;">No All-Time Stats recorded.</p>
     
     <div style="border: 2px solid var(--gold); padding: 15px; border-radius: 12px; margin-bottom: 15px;">
       <div style="color:var(--gold); font-weight:bold; margin-bottom:10px;">Team 1</div>
@@ -553,7 +584,6 @@
 <script>
 const firebaseConfig={apiKey:"AIzaSyCRRQgDDqIvr0tBZDs2fzqSWNHDOxfbBNE",authDomain:"popdarts-f2157.firebaseapp.com",databaseURL:"https://popdarts-f2157-default-rtdb.firebaseio.com",projectId:"popdarts-f2157",storageBucket:"popdarts-f2157.firebasestorage.app",messagingSenderId:"886756771244",appId:"1:886756771244:web:d2e99b3f474944ba5aa609"};
 
-// ADDED WHITE DART
 const DARTS=[
   {id:'bg',grad:'linear-gradient(135deg,#1a1a1a 0%,#22c55e 50%,#1a1a1a 100%)',color:'#22c55e'},
   {id:'tr',grad:'linear-gradient(135deg,#f97316 0%,#0891b2 50%,#ec4899 100%)',color:'#f97316'},
@@ -571,9 +601,6 @@ let db=null,DATA={players:[],draw:[],stats:[],history:[],target:21,live:null,dem
     connected=false,inGame=false,isSaving=false,trophyAnim=null,deviceId=Math.random().toString(36).substr(2,9);
 let editingHistoryId=null;
 
-// ============================================================
-// FIREBASE INIT
-// ============================================================
 function initFirebase(){
   firebase.initializeApp(firebaseConfig);
   db=firebase.database();
@@ -629,20 +656,19 @@ function updateDemoUI(){
   const mBtn=document.getElementById('m-demo-toggle'),dBtn=document.getElementById('d-demo-toggle');
   if(mBtn)mBtn.textContent=DATA.demo?'🧪 Demo: ON - Disable':'🧪 Demo: OFF - Enable';
   if(dBtn)dBtn.textContent='🧪 Demo: '+(DATA.demo?'ON':'OFF');
+  if(DATA.demo) {
+    document.body.classList.add('demo-active');
+  } else {
+    document.body.classList.remove('demo-active');
+  }
 }
 
-// ============================================================
-// NAV
-// ============================================================
 document.querySelectorAll('.nav-btn').forEach(b=>b.onclick=()=>go(b.dataset.s));
 function go(s){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById('screen-'+s)?.classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('on',b.dataset.s===s));document.getElementById('nav').style.display=['game','dart','custom','pairs'].includes(s)?'none':'flex';}
 function switchTab(t,btn){document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');['draw','stand','all'].forEach(x=>{const el=document.getElementById('tab-'+x);if(el)el.style.display=x===t?'block':'none';});}
 function switchLeftTab(t,btn){btn.parentElement.querySelectorAll('.d-tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('d-left-draw').style.display=t==='draw'?'block':'none';document.getElementById('d-left-settings').style.display=t==='settings'?'block':'none';}
 function switchRightTab(t,btn){btn.parentElement.querySelectorAll('.d-tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('d-right-stand').style.display=t==='stand'?'block':'none';document.getElementById('d-right-alltime').style.display=t==='alltime'?'block':'none';}
 
-// ============================================================
-// RENDER
-// ============================================================
 function render(){
   const done=DATA.draw.filter(g=>!g.isGF&&g.winner).length,total=DATA.draw.filter(g=>!g.isGF).length;
   document.getElementById('s-players').textContent=DATA.players.length;
@@ -715,9 +741,6 @@ function renderPlayers(){
   el.innerHTML=DATA.players.map(p=>{const s=DATA.stats.find(x=>x.name===p)||{};return`<div class="player-row"><div class="player-avatar">${p[0].toUpperCase()}</div><div class="player-info"><div class="name">${s.champs?'🏆 ':''}${p}</div><div class="meta">${s.gp||0} GP • ${s.wins||0} W</div></div><button class="player-del" onclick="delPlayer('${p.replace(/'/g,"\\'")}')">×</button></div>`;}).join('');
 }
 
-// ============================================================
-// DESKTOP RENDER
-// ============================================================
 function renderDesktop(){
   document.getElementById('d-player-chips').innerHTML=DATA.players.map(p=>`<span class="d-player-chip">${p}<button onclick="delPlayer('${p.replace(/'/g,"\\'")}')">×</button></span>`).join('')||'<span style="color:var(--muted);font-size:11px">No players added</span>';
   const n=getNext();
@@ -743,13 +766,12 @@ function renderDesktop(){
       hero.innerHTML=`<div class="hero-tag">${g.isGF?'🏆 GRAND FINAL':'GAME '+g.num}</div><div class="hero-match" style="font-size:24px">${g.p1}<span class="hero-vs">vs</span>${g.p2}</div><button class="hero-btn" onclick="playIdxD(${n.idx})">▶️ Play</button>`;
   }
 
-  // Inject Desktop Quick Play Buttons directly under Hero Content
   if(!inGame || !DATA.live?.active) {
       if(!hero.innerHTML.includes('1v1 Quick')) {
         hero.innerHTML += `
           <div style="display:flex; gap:10px; margin-top:20px; justify-content:center;">
              <button class="btn btn-gray" style="width:auto; padding:10px 20px; font-size:14px;" onclick="openCustom(true)">1v1 Quick</button>
-             <button class="btn" style="width:auto; padding:10px 20px; font-size:14px; background:rgba(255,193,7,0.15); color:var(--gold); border:1px solid var(--gold);" onclick="openPairs(true)">👯 2v2 Drop Double</button>
+             <button class="btn" style="width:auto; padding:10px 20px; font-size:14px; background:rgba(255,193,7,0.15); color:var(--gold); border:1px solid var(--gold);" onclick="openPairs(true)">👯 2v2 Quick</button>
           </div>
         `;
       }
@@ -759,9 +781,6 @@ function renderDesktop(){
   else{document.getElementById('d-empty').style.display='flex';document.getElementById('d-game').style.display='none';}
 }
 
-// ============================================================
-// TABLE HELPERS
-// ============================================================
 function calcStandings(){
   const map={};DATA.players.forEach(p=>map[p]={name:p,w:0,l:0,pf:0,pa:0});
   DATA.draw.forEach(g=>{
@@ -780,9 +799,6 @@ function allTimeTable(stats,size){
   return`<table class="tbl" style="font-size:${fs}"><thead><tr><th>Player</th><th>GP</th><th>W</th><th>L</th><th>%</th><th>D</th><th>🏆</th></tr></thead><tbody>${stats.map((s,i)=>{const pct=s.gp?Math.round(s.wins/s.gp*100):0,diff=(s.pf||0)-(s.pa||0);return`<tr class="${i===0?'top':''}"><td>${s.champs?'🏆 ':''}${s.name}</td><td>${s.gp||0}</td><td>${s.wins||0}</td><td>${s.losses||0}</td><td>${pct}</td><td class="${diff>0?'plus':diff<0?'minus':''}">${diff>0?'+':''}${diff}</td><td class="${s.champs?'champ':''}">${s.champs||0}</td></tr>`;}).join('')}</tbody></table>`;
 }
 
-// ============================================================
-// HISTORY EDIT / UNDO / REDO
-// ============================================================
 function openHistoryModal(){document.getElementById('history-modal').classList.add('on');renderHistoryModal();}
 function closeHistoryModal(){document.getElementById('history-modal').classList.remove('on');}
 function renderHistoryModal(){const el=document.getElementById('history-modal-list');if(!DATA.history.length){el.innerHTML='<div class="empty">No history yet</div>';return;}el.innerHTML=DATA.history.map(h=>historyRowHtml(h,true)).join('');}
@@ -822,6 +838,33 @@ async function redoHistory(id){
   await db.ref('history/'+id).update({undone:false});toast('Game redone!','ok');
 }
 async function undoLast(){const undoable=DATA.history.filter(h=>!h.undone);if(!undoable.length){toast('Nothing to undo','err');return;}await undoHistoryEntry(undoable[0].id);}
+
+async function updateStats(winner, loser, winScore, loseScore, isChampWin) {
+  if (!winner || !loser || winner === 'null' || loser === 'null') return;
+  const wS = await db.ref('stats/' + winner).once('value');
+  const lS = await db.ref('stats/' + loser).once('value');
+  const wD = wS.val() || {};
+  const lD = lS.val() || {};
+  
+  await db.ref('stats/' + winner).set({
+    gp: (wD.gp || 0) + 1,
+    wins: (wD.wins || 0) + 1,
+    losses: (wD.losses || 0),
+    pf: (wD.pf || 0) + winScore,
+    pa: (wD.pa || 0) + loseScore,
+    champs: (wD.champs || 0) + (isChampWin ? 1 : 0)
+  });
+  
+  await db.ref('stats/' + loser).set({
+    gp: (lD.gp || 0) + 1,
+    wins: (lD.wins || 0),
+    losses: (lD.losses || 0) + 1,
+    pf: (lD.pf || 0) + loseScore,
+    pa: (lD.pa || 0) + winScore,
+    champs: (lD.champs || 0)
+  });
+}
+
 async function reverseStatsEntry(w,l,ws,ls,isGF){
   if(!w||!l||w==='null'||l==='null')return;
   const wS=await db.ref('stats/'+w).once('value'),lS=await db.ref('stats/'+l).once('value');
@@ -835,9 +878,6 @@ async function saveSnapshot(){
   await db.ref('snapshots').push().set(snap);toast('Snapshot saved!','ok');
 }
 
-// ============================================================
-// GAME LOGIC
-// ============================================================
 function getNext(){for(let i=0;i<DATA.draw.length;i++)if(!DATA.draw[i].isGF&&!DATA.draw[i].winner)return{idx:i,game:DATA.draw[i]};for(let i=0;i<DATA.draw.length;i++)if(DATA.draw[i].isGF&&!DATA.draw[i].winner)return{idx:i,game:DATA.draw[i]};return null;}
 
 function updateDesktopGameUI(){
@@ -849,7 +889,7 @@ function updateDesktopGameUI(){
   document.getElementById('d-bar1').style.width=p1pct+'%';document.getElementById('d-bar1').style.background=GAME.d1?.grad||DARTS[0].grad;
   document.getElementById('d-bar2').style.width=p2pct+'%';document.getElementById('d-bar2').style.background=GAME.d2?.grad||DARTS[2].grad;
   const lbl=document.getElementById('d-label');
-  if(GAME.isPairs){lbl.textContent='Pairs 69';lbl.className='badge demo';}else if(GAME.isGF){lbl.textContent='🏆 GF';lbl.className='badge gf';}else if(GAME.isChamp){lbl.textContent='Game '+GAME.num;lbl.className='badge';}else{lbl.textContent='Quick';lbl.className='badge';}
+  if(GAME.isPairs){lbl.textContent='Pairs 2v2';lbl.className='badge demo';}else if(GAME.isGF){lbl.textContent='🏆 GF';lbl.className='badge gf';}else if(GAME.isChamp){lbl.textContent='Game '+GAME.num;lbl.className='badge';}else{lbl.textContent='Quick';lbl.className='badge';}
   document.getElementById('d-demo').style.display=DATA.demo?'inline-block':'none';
 }
 
@@ -917,20 +957,48 @@ async function saveGame(){
 }
 
 async function checkGrandFinal(){
-  const regular=DATA.draw.filter(g=>!g.isGF),allDone=regular.every(g=>g.winner),hasGF=DATA.draw.some(g=>g.isGF);
-  if(allDone&&!hasGF&&regular.length>0){
-    const map={};DATA.players.forEach(p=>map[p]={name:p,w:0,diff:0});
-    DATA.draw.forEach(g=>{if(!g.winner)return;if(map[g.p1]){if(g.winner===g.p1)map[g.p1].w++;map[g.p1].diff+=(g.s1||0)-(g.s2||0);}if(map[g.p2]){if(g.winner===g.p2)map[g.p2].w++;map[g.p2].diff+=(g.s2||0)-(g.s1||0);}});
-    const sorted=Object.values(map).sort((a,b)=>b.w-a.w||b.diff-a.diff);
-    if(sorted.length>=2)await db.ref('draw/gf').set({num:'GF',p1:sorted[0].name,p2:sorted[1].name,s1:null,s2:null,winner:null,isGF:true});
+  const snap = await db.ref('draw').once('value');
+  const drawData = snap.val() || {};
+  const drawArr = Object.values(drawData);
+  
+  const regular = drawArr.filter(g => !g.isGF);
+  const allDone = regular.length > 0 && regular.every(g => g.winner);
+  const hasGF = drawArr.some(g => g.isGF);
+  
+  if(allDone && !hasGF){
+    const map = {};
+    DATA.players.forEach(p => map[p] = {name: p, w: 0, diff: 0});
+    
+    regular.forEach(g => {
+      if(!g.winner) return;
+      if(map[g.p1]){
+        if(g.winner === g.p1) map[g.p1].w++;
+        map[g.p1].diff += (g.s1 || 0) - (g.s2 || 0);
+      }
+      if(map[g.p2]){
+        if(g.winner === g.p2) map[g.p2].w++;
+        map[g.p2].diff += (g.s2 || 0) - (g.s1 || 0);
+      }
+    });
+    
+    const sorted = Object.values(map).sort((a,b) => b.w - a.w || b.diff - a.diff);
+    
+    if(sorted.length >= 2){
+      await db.ref('draw/gf').set({
+        num: 'GF',
+        p1: sorted[0].name,
+        p2: sorted[1].name,
+        s1: 0, 
+        s2: 0,
+        winner: "",
+        isGF: true
+      });
+    }
   }
 }
 
 function rematch(){document.getElementById('win').classList.remove('on');stopTrophyAnim();GAME.s1=0;GAME.s2=0;db.ref('live').update({saved:false,score1:0,score2:0});updateGameUI();}
 
-// ============================================================
-// PLAYERS / DRAW / UTILS
-// ============================================================
 async function addPlayer(){const inp=document.getElementById('inp-player'),name=inp.value.trim();if(!name)return;hideDropdowns();if(DATA.players.includes(name)){toast('Already in roster','err');return;}await db.ref('players/'+name).set(true);inp.value='';toast('Added!','ok');}
 async function addPlayerD(){const inp=document.getElementById('d-inp-player'),name=inp.value.trim();if(!name)return;hideDropdowns();if(DATA.players.includes(name)){toast('Already in roster','err');return;}await db.ref('players/'+name).set(true);inp.value='';toast('Added!','ok');}
 async function delPlayer(name){if(!confirm('Remove '+name+'?'))return;await db.ref('players/'+name).remove();toast('Removed','ok');}
@@ -955,15 +1023,11 @@ async function clearDraw(){if(!confirm('Clear championship?'))return;await db.re
 function setTarget(val){db.ref('config/target').set(parseInt(val)||21);}
 function toggleDemo(){const newVal=!DATA.demo;db.ref('config/demo').set(newVal);toast(newVal?'Demo ON - stats paused':'Demo OFF','ok');}
 
-// ============================================================
-// MATCH LAUNCHERS
-// ============================================================
 function playNext(){const n=getNext();if(!n){toast(DATA.draw.length?'All done!':'Generate draw first','err');return;}playIdx(n.idx);}
 function playIdx(i){const g=DATA.draw[i];if(!g||g.winner)return;GAME={p1:g.p1,p2:g.p2,s1:0,s2:0,d1:null,d2:null,idx:i,num:g.num,isChamp:true,isGF:g.isGF,drawKey:g.key,isPairs:false,target:DATA.target};openDart(1,g.p1);}
 function playIdxD(i){const g=DATA.draw[i];if(!g||g.winner)return;GAME={p1:g.p1,p2:g.p2,s1:0,s2:0,d1:null,d2:null,idx:i,num:g.num,isChamp:true,isGF:g.isGF,drawKey:g.key,isPairs:false,target:DATA.target};openDartD(1,g.p1);}
 function cancelDart(){GAME={p1:null,p2:null,s1:0,s2:0,d1:null,d2:null,idx:-1,num:null,isChamp:false,isGF:false,drawKey:null,isPairs:false,target:DATA.target};go('home');}
 
-// UNIVERSAL QUICK MATCH UI
 function openCustom(isDesktop=false){
   if(DATA.players.length<2){toast('Add 2+ players','err');return;}
   const opts = DATA.players.map(p=>`<option>${p}</option>`).join('');
@@ -992,7 +1056,6 @@ function startCustom(isDesktop){
   }
 }
 
-// UNIVERSAL PAIRS EVENTS LAUNCHERS
 function openPairs(isDesktop=false){
   const opts = DARTS.map(d => `<option value="${d.id}">${d.id.toUpperCase()} Dart Color</option>`).join('');
   if (isDesktop) {
@@ -1021,13 +1084,13 @@ function startPairs(isDesktop){
     d1:{id:'t1', grad:`linear-gradient(90deg, ${t1c1.color} 0%, ${t1c2.color} 100%)`, color:'#fff'},
     d2:{id:'t2', grad:`linear-gradient(90deg, ${t2c1.color} 0%, ${t2c2.color} 100%)`, color:'#fff'},
     idx:-1, num:null, isChamp:false, isGF:false, drawKey:null,
-    isPairs:true, target:69
+    isPairs:true, target:21
   };
   
   inGame=true;
   db.ref('live').set({
     active:true, player1:GAME.p1, player2:GAME.p2, score1:0, score2:0,
-    color1:t1c1.id, color2:t2c1.id, target:69, isChamp:false, isGF:false,
+    color1:t1c1.id, color2:t2c1.id, target:21, isChamp:false, isGF:false,
     gameNum:null, drawKey:null, demo:true, isPairs:true, saved:false,
     gameId:Date.now()+'-'+deviceId, pGrad1:GAME.d1.grad, pGrad2:GAME.d2.grad
   });
@@ -1090,7 +1153,7 @@ function setupGameUI(){
   document.getElementById('name1').textContent=GAME.p1;document.getElementById('name2').textContent=GAME.p2;
   document.getElementById('dart1').style.background=GAME.d1.grad;document.getElementById('dart2').style.background=GAME.d2.grad;
   const lbl=document.getElementById('g-label');
-  if(GAME.isPairs){lbl.textContent='Pairs 69';lbl.className='badge demo';}else if(GAME.isGF){lbl.textContent='🏆 GF';lbl.className='badge gf';}else if(GAME.isChamp){lbl.textContent='Game '+GAME.num;lbl.className='badge';}else{lbl.textContent='Quick';lbl.className='badge';}
+  if(GAME.isPairs){lbl.textContent='Pairs 2v2';lbl.className='badge demo';}else if(GAME.isGF){lbl.textContent='🏆 GF';lbl.className='badge gf';}else if(GAME.isChamp){lbl.textContent='Game '+GAME.num;lbl.className='badge';}else{lbl.textContent='Quick';lbl.className='badge';}
   document.getElementById('g-demo').style.display=DATA.demo?'inline-block':'none';
   updateGameUI();
 }
@@ -1171,3 +1234,5 @@ initFirebase();
 </script>
 </body>
 </html>
+
+```
